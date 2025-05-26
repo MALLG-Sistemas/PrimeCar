@@ -21,6 +21,14 @@ class Modelo(models.Model):
         return f"{self.nome_marca} {self.nome_modelo} ({self.ano_modelo})"
 
 
+# Função para definir o caminho de upload da imagem do carro
+def get_upload_path_imagem_carro(instance, filename):
+    # O arquivo será enviado para MEDIA_ROOT/imagens_carros/<id_do_carro>/<filename>
+    # Garante que o carro tenha um ID antes de tentar usá-lo no caminho
+    carro_id_path = instance.id if instance.id else "temp_carro_id"
+    return os.path.join("imagens_carros", str(carro_id_path), filename)
+
+
 # Entidade de Carros
 class Carro(models.Model):
     modelo = models.ForeignKey(
@@ -46,13 +54,3 @@ class Carro(models.Model):
 
     def __str__(self):
         return f"{self.modelo} - {self.cor} - ({self.ano_fabricacao})"
-
-
-# Função para definição do caminho do upload da(s) foto(s) do carro
-def get_upload_path_carro(instance, filename):
-    # Define o caminho onde as fotos do carro serão armazenadas
-    # Garante que o carro tenha um ID antes de tentar usá-lo no caminho
-    carro_id_path = (
-        instance.carro.id if instance.carro and instance.carro.id else "temp_carro_id"
-    )
-    return os.path.join("carros_fotos", str(carro_id_path, filename))
