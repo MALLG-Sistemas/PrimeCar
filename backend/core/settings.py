@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Adicionados apps e bibliotecas necessárias
+    "rest_framework",
+    "veiculos.apps.VeiculosConfig",
 ]
 
 MIDDLEWARE = [
