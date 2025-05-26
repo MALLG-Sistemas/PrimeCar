@@ -76,7 +76,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "primecar_db",
-        "USER": "root@localhost",
+        "USER": "root",
         "PASSWORD": "JorgeD1958$",
         "HOST": "localhost",
         "PORT": "3306",
