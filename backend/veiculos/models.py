@@ -1,4 +1,5 @@
 from django.db import models
+import os  # Importação o módulo os para manipulação das imagens
 
 
 # Entidade de Modelos
@@ -45,3 +46,13 @@ class Carro(models.Model):
 
     def __str__(self):
         return f"{self.modelo} - {self.cor} - ({self.ano_fabricacao})"
+
+
+# Função para definição do caminho do upload da(s) foto(s) do carro
+def get_upload_path_carro(instance, filename):
+    # Define o caminho onde as fotos do carro serão armazenadas
+    # Garante que o carro tenha um ID antes de tentar usá-lo no caminho
+    carro_id_path = (
+        instance.carro.id if instance.carro and instance.carro.id else "temp_carro_id"
+    )
+    return os.path.join("carros_fotos", str(carro_id_path, filename))
