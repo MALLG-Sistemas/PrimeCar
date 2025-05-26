@@ -54,7 +54,6 @@ class CarroAdmin(admin.ModelAdmin):
         Returns:
             str: Um trecho de HTML seguro que exibe uma imagem em miniatura se a imagem principal existir e possuir uma URL; caso contrário, retorna uma string indicando que não há imagem.
         """
-        """Exibe uma miniatura da imagem principal na lista de carros do admin."""
         if carro.imagem_principal and hasattr(carro.imagem_principal, "url"):
             return mark_safe(
                 f'<img src="{carro.imagem_principal.url}" width="100" alt="Preview de {carro}" />'
