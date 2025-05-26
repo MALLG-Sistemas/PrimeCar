@@ -1,0 +1,62 @@
+# Ambiente virtual
+venv/
+*.pyc
+__pycache__/
+
+# SQLite
+db.sqlite3
+
+# Arquivos do Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+local_settings.py
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Arquivos temporários
+*.swp
+*.bak
+*.tmp
+
+# Cache de pacotes
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribuição
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pytest
+.cache/
+
+# MyPy
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+coverage.xml
+
+# Sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
