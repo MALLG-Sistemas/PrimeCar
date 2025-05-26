@@ -63,3 +63,6 @@ Desktop.ini
 
 # Arquivo de scripts SQL digitado no MySQL Workbench
 scriptsSQL/
+
+# Configuração variavel de ambiente
+.env
