@@ -24,7 +24,7 @@ Este repositório contém o backend em Django para o sistema de gerenciamento de
 - Django 5.2.1
 - Django REST Framework 3.16.0
 - MySQL
-- Pillow
+- Pillow 11.2.1
 - python-dotenv
 
 ### Pré-requisitos
