@@ -62,4 +62,4 @@ ehthumbs.db
 Desktop.ini
 
 # Arquivo de scripts SQL digitado no MySQL Workbench
-scriptsSQL/
+backend/scriptsSQL
