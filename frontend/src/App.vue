@@ -1,10 +1,15 @@
 <template>
-  <div></div>
-  <HelloWorld msg="Vite + Vue" />
+  <ButtonComponent> Click Me </ButtonComponent>
+  <ButtonComponent> Click Me </ButtonComponent>
+  <ButtonComponent> Click Me </ButtonComponent>
+  <ButtonComponent> Click Me </ButtonComponent>
+  <ButtonComponent> Click Me </ButtonComponent>
+  <HomeView />
 </template>
 
 <script setup>
-import HelloWorld from "./components/HelloWorld.vue";
+import ButtonComponent from "./components/ButtonComponent.vue";
+import HomeView from "./views/HomeView.vue";
 </script>
 
 <style scoped></style>
