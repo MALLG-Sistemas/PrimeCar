@@ -47,10 +47,19 @@ class Carro(models.Model):
         blank=True, null=True, verbose_name="Descrição do Carro/Modelo"
     )
 
+    # Campo para armazenar a imagem do carro
+    imagem_principal = models.ImageField(
+        upload_to=get_upload_path_imagem_carro,
+        verbose_name="Imagem Principal do Veículo",
+        null=True,  # Permite que o carro seja cadastrado sem imagem inicialmente
+        blank=True,  # Permite que o campo seja opcional no formulário do admin
+    )
+
     class Meta:
         verbose_name = "Veículo"
         verbose_name_plural = "Veículos"
         ordering = ["-data_cadastro"]
 
     def __str__(self):
+        modelo_str = str(self.modelo) if self.modelo else "Modelo Desconhecido"
         return f"{self.modelo} - {self.cor} - ({self.ano_fabricacao})"
