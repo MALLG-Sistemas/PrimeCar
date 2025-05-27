@@ -6,8 +6,6 @@
   <!-- Codificar o footer -->
 </template>
 
-<script setup>
-// import HomeView from "./views/HomeView.vue";
-</script>
+<script setup></script>
 
 <style scoped></style>
