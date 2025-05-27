@@ -13,9 +13,11 @@ const apiClient = axios.create({
 });
 
 export default {
+  // Método para buscar todos os carros do endpoint /veiculos/carros/
   getCarros() {
     return apiClient.get("/veiculos/carros/");
   },
+  // Método para buscar um carro específico pelo ID do endpoint /veiculos/carros/{id}/
   getCarro(id) {
     return apiClient.get(`/veiculos/carros/${id}/`);
   },
