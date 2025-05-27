@@ -7,4 +7,4 @@ const app = createApp(App);
 
 app.use(router); // Configuração do router na aplicação Vue
 
-createApp(App).mount("#app");
+app.mount("#app"); // Montagem da aplicação Vue no elemento com id "app"
