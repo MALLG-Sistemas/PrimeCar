@@ -34,6 +34,13 @@ INSTALLED_APPS = [
     "veiculos.apps.VeiculosConfig",
 ]
 
+# Configuração do Django REST Framework
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,  # Quantidade de itens por página
+    # Faltará codificar a parte de autenticação
+}
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
