@@ -138,7 +138,12 @@ const isCarrosActive = computed(() => {
 // Controle de estado para o abrir e fechar o menu/submenu
 const isCarrosOpen = ref(false);
 function toggleCarros() {
-  isCarrosOpen.value = !isCarrosOpen.value;
+  const open = !isCarrosOpen.value;
+  isCarrosOpen.value = open;
+  if (open) {
+    // Fecha o submenu de Modelos, quando o submenu de Carros é aberto
+    isModelosOpen.value = false;
+  }
 }
 
 const isModelsActive = computed(() => route.path.startsWith("/modelos"));
@@ -150,7 +155,12 @@ const isModelsAddActive = computed(() => route.path === "/modelos/add");
 // Controle de estado para o abrir e fechar o menu/submenu de Modelos
 const isModelosOpen = ref(false);
 function toggleModelos() {
-  isModelosOpen.value = !isModelosOpen.value;
+  const open = !isModelosOpen.value;
+  isModelosOpen.value = open;
+  if (open) {
+    // Fecha o submenu de Carros, quando o submenu de Modelos é aberto
+    isCarrosOpen.value = false;
+  }
 }
 </script>
 
