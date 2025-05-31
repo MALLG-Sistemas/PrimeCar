@@ -12,6 +12,8 @@
 <script setup></script>
 
 <style lang="scss" scoped>
+@use "../styles/variables" as *;
+
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
