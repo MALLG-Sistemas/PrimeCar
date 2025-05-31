@@ -9,6 +9,8 @@
 <script setup></script>
 
 <style lang="scss" scoped>
+@use "../styles/variables" as *;
+
 .section-edit-veiculos {
   .container {
     padding: 20px;

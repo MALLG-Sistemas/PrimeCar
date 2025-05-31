@@ -14,13 +14,13 @@ const routes = [
         meta: { title: "Home" },
       },
       {
-        path: "/add",
+        path: "add",
         name: "Add Veiculo",
         component: () => import("../views/AddVeiculo.vue"),
         meta: { title: "Add Veiculo" },
       },
       {
-        path: "/edit",
+        path: "edit",
         name: "Editar Veiculo",
         component: () => import("../views/EditVeiculo.vue"),
         meta: { title: "Editar Veiculo" },
