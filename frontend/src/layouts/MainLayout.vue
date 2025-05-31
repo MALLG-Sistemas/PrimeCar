@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-layout">
+    <!-- Sidebar -->
     <aside class="sidebar">
-      <!-- Logo do Sistema PrimeCar -->
+      <!-- Logo -->
       <div class="logo-container">
         <img
           src="/images/logo-primecar.jpg"
@@ -14,81 +15,107 @@
         <!-- Link "Dashboard" (Home Page) -->
         <router-link
           to="/"
-          class="nav-link router-link-active">
-          <span class="material-symbols-outlined icon-link-nav">cottage</span>
-          <span class="nav-text">Dashboard</span>
+          custom
+          v-slot="{ navigate, isActive }">
+          <div
+            class="nav-link"
+            :class="{ 'router-link-active': isActive }"
+            @click="navigate">
+            <span class="nav-link-icon material-symbols-outlined">cottage</span>
+            <span class="nav-text">Dashboard</span>
+          </div>
         </router-link>
 
         <!-- Link "Modelos" -->
         <router-link
           to="/modelos"
-          class="nav-link"
-          :class="{ 'router-link-active': isModelsActive }"
-          @click.prevent="toggleModelos">
-          <span class="material-symbols-outlined icon-link-nav"
-            >traffic_jam</span
-          >
-          <span class="nav-text">Modelos</span>
-          <span class="material-symbols-outlined arrow-icon">
-            {{ isModelosOpen ? "keyboard_arrow_up" : "keyboard_arrow_down" }}
-          </span>
+          custom>
+          <div
+            class="nav-link"
+            :class="{ 'router-link-active': openMenu === 'modelos' }"
+            @click="() => toggleMenu('modelos')">
+            <span class="nav-link-icon material-symbols-outlined"
+              >traffic_jam</span
+            >
+            <span class="nav-text">Modelos</span>
+            <span
+              class="arrow-icon material-symbols-outlined"
+              :class="{ open: openMenu === 'modelos' }">
+              {{
+                openMenu === "modelos"
+                  ? "keyboard_arrow_up"
+                  : "keyboard_arrow_down"
+              }}
+            </span>
+          </div>
         </router-link>
 
-        <!-- Submenu de Modelos -->
+        <!-- Submenu Modelos -->
         <div
           class="sub-nav-link"
-          v-show="isModelosOpen">
+          v-show="openMenu === 'modelos'">
           <router-link
             to="/modelos"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isModelsDashboardActive }">
+            :class="{ 'router-link-active': route.path === '/modelos' }">
             <span class="nav-text">Dashboard Modelos</span>
           </router-link>
+
           <router-link
             to="/modelos/add"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isModelsAddActive }">
+            :class="{ 'router-link-active': route.path === '/modelos/add' }">
             <span class="nav-text">Cadastro de Modelos</span>
           </router-link>
         </div>
 
-        <!-- Link "Carros" -->
+        <!-- Menu Carros -->
         <router-link
           to="/"
-          class="nav-link"
-          :class="{ 'router-link-active': isCarrosActive }"
-          active-class=""
-          @click.prevent="toggleCarros">
-          <span class="material-symbols-outlined icon-link-nav"
-            >directions_car</span
-          >
-          <span class="nav-text">Carros</span>
-          <span class="material-symbols-outlined arrow-icon">
-            {{ isCarrosOpen ? "keyboard_arrow_up" : "keyboard_arrow_down" }}
-          </span>
+          custom>
+          <div
+            class="nav-link"
+            :class="{ 'router-link-active': openMenu === 'carros' }"
+            @click="() => toggleMenu('carros')">
+            <span class="nav-link-icon material-symbols-outlined"
+              >directions_car</span
+            >
+            <span class="nav-text">Carros</span>
+            <span
+              class="arrow-icon material-symbols-outlined"
+              :class="{ open: openMenu === 'carros' }">
+              {{
+                openMenu === "carros"
+                  ? "keyboard_arrow_up"
+                  : "keyboard_arrow_down"
+              }}
+            </span>
+          </div>
         </router-link>
 
-        <!-- Submenu de Carros -->
+        <!-- Submenu Carros -->
         <div
           class="sub-nav-link"
-          v-show="isCarrosOpen">
+          v-show="openMenu === 'carros'">
           <router-link
             to="/"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isHome }"
+            :class="{ 'router-link-active': route.path === '/' }"
             active-class="">
             <span class="nav-text">Lista de Veículos</span>
           </router-link>
+
           <router-link
             to="/add"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isAdd }">
+            :class="{ 'router-link-active': route.path === '/add' }">
             <span class="nav-text">Adicionar Veículo</span>
           </router-link>
+
           <router-link
             to="/edit"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isEdit }">
+            :class="{ 'router-link-active': route.path === '/edit' }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
           </router-link>
         </div>
@@ -103,6 +130,8 @@
         <p class="footer-text">Copyright © 2025 PrimeCar</p>
       </div>
     </aside>
+
+    <!-- Conteúdo Principal -->
     <main class="main-content">
       <HeaderComponent />
       <router-view />
@@ -111,47 +140,20 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRoute } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
+// Estado reativo para controlar qual menu está aberto
+const openMenu = ref("");
+
+// Hook para acessar a rota atual
 const route = useRoute();
 
-// Propriedades computadas para verificar a rota ativa atual
-const isHome = computed(() => route.path === "/");
-const isAdd = computed(() => route.path === "/add");
-const isEdit = computed(() => route.path === "/edit");
-
-// Ativa o menu "Carros" quando a rota for uma das definidas
-const isCarrosActive = computed(() => {
-  return ["/", "/add", "/edit"].includes(route.path);
-});
-
-// Ativa o menu "Modelos" se o caminho iniciar com "/modelos"
-const isModelsActive = computed(() => route.path.startsWith("/modelos"));
-const isModelsDashboardActive = computed(() => route.path === "/modelos");
-const isModelsAddActive = computed(() => route.path === "/modelos/add");
-
-// Estados reativos para controle de exibição dos submenus
-const isCarrosOpen = ref(false);
-const isModelosOpen = ref(false);
-
-// Função genérica para alternar a abertura de um menu e fechar o outro
-function toggleMenu(currentMenu, otherMenu) {
-  currentMenu.value = !currentMenu.value;
-  if (currentMenu.value) {
-    otherMenu.value = false;
-  }
-}
-
-// Funções de alternância específicas para cada submenu
-function toggleCarros() {
-  toggleMenu(isCarrosOpen, isModelosOpen);
-}
-
-function toggleModelos() {
-  toggleMenu(isModelosOpen, isCarrosOpen);
-}
+// Função para alternar abertura de menus
+const toggleMenu = (menu) => {
+  openMenu.value = openMenu.value === menu ? "" : menu;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -188,13 +190,14 @@ function toggleModelos() {
     text-decoration: none;
     color: inherit;
     font-size: 14px;
+    cursor: pointer;
 
     /* Styles para o link ativo */
     &.router-link-active {
       background-color: $color-primary;
     }
 
-    .icon-link-nav {
+    .nav-link-icon {
       font-size: 24px;
       margin-right: 16px;
     }
@@ -202,6 +205,11 @@ function toggleModelos() {
     .arrow-icon {
       margin-left: auto;
       font-size: 24px;
+      transition: transform 0.2s ease;
+
+      &.open {
+        transform: rotate(180deg);
+      }
     }
   }
 
@@ -220,7 +228,7 @@ function toggleModelos() {
 /* Footer da Sidebar Styles */
 .sidebar-footer {
   text-align: center;
-  margin-top: 50px;
+  margin-top: auto;
 
   p {
     font-size: 12px;
