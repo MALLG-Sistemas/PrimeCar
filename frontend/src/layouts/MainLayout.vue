@@ -104,6 +104,7 @@
       </div>
     </aside>
     <main class="main-content">
+      <HeaderComponent />
       <router-view />
     </main>
   </div>
@@ -112,6 +113,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
+import HeaderComponent from "../components/HeaderComponent.vue";
 
 const route = useRoute();
 
@@ -233,6 +235,5 @@ function toggleModelos() {
 /* Styles de main content */
 .main-content {
   flex-grow: 1;
-  padding: 20px;
 }
 </style>

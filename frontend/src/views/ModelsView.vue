@@ -3,7 +3,6 @@
     <div class="container">
       <h1 class="title">Modelos</h1>
       <p class="subtitle">Lista de modelos disponíveis</p>
-      <!-- Aqui você pode adicionar a lógica para exibir os modelos -->
       <p>Em breve, esta seção exibirá os modelos disponíveis.</p>
     </div>
   </section>
