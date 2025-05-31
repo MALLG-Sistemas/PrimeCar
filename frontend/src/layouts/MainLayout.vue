@@ -56,7 +56,7 @@
             <span class="nav-text">Adicionar Veículo</span>
           </router-link>
           <router-link
-            to="/editar"
+            to="/edit"
             class="nav-link sub-link"
             :class="{ 'router-link-active': isEdit }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
@@ -77,7 +77,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 const isHome = computed(() => route.path === "/");
 const isAdd = computed(() => route.path === "/add");
-const isEdit = computed(() => route.path === "/editar");
+const isEdit = computed(() => route.path === "/edit");
 </script>
 
 <style lang="scss" scoped>
