@@ -1,6 +1,19 @@
 <template>
   <div class="car-list-view">
-    <h1 class="title-veiculos">Veículos</h1>
+    <div class="container-header">
+      <h1 class="title-veiculos">Veículos</h1>
+
+      <!-- Search Input ***** NÃO ESQUECER DE IMPLEMENTAR A LÓGICA DE PESQUISA NA LISTA DE CARROS -->
+      <div class="search-wrapper">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input
+          type="text"
+          placeholder="Pesquisar veículos..."
+          class="search-input" />
+      </div>
+
+      <!-- Falta o button de Adicionar Veículo -->
+    </div>
     <div
       v-if="loading"
       class="loading">
@@ -121,6 +134,8 @@ const verDetalhes = (carroId) => {
   // Aqui você usaria o router para navegar para a página de detalhes
   // router.push({ name: 'CarDetail', params: { id: carroId } });
 };
+
+// Falta Codificar a lógico do search input, para pesquisar na lista de carros
 </script>
 
 <style scoped lang="scss">
@@ -134,6 +149,30 @@ const verDetalhes = (carroId) => {
     font-size: 29px;
     font-weight: 500;
     color: $color-text-secondary;
+  }
+}
+
+.container-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    width: 350px;
+    padding: 12px 16px;
+    gap: 8px;
+    color: $color-text-tertiary;
+    border-radius: 6px;
+    border: 1px solid $color-border-table;
+  }
+
+  .search-input {
+    border: none;
+    outline: none;
+    flex: 1;
   }
 }
 

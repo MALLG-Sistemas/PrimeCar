@@ -2,7 +2,7 @@
   <header class="navbar">
     <div class="navbar-left">
       <!-- Futuramente aqui será codificado parte que recebe o nome do usuário logado -->
-      <h1 class="welcome">Bem-vindo, Mauricio!</h1>
+      <h1 class="title-welcome">Bem-vindo, Mauricio!</h1>
       <p class="subtitle">
         Gerencie marcas, modelos, frota, locações e usuários cadastrados.
       </p>
@@ -52,8 +52,9 @@
     flex-direction: column;
     justify-content: center;
 
-    .welcome {
+    .title-welcome {
       margin: 0;
+      font-family: $font-primary;
       font-size: 2rem; // 32px
       font-weight: 600;
       color: $color-text-secondary;
