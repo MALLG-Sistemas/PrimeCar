@@ -22,27 +22,58 @@
         <!-- Modelos -->
         <router-link
           to="/modelos"
-          class="nav-link">
+          class="nav-link"
+          :class="{ 'router-link-active': isModelsActive }"
+          active-class=""
+          @click.prevent="toggleModelos">
           <span class="material-symbols-outlined icon-link-nav"
             >traffic_jam</span
           >
           <span class="nav-text">Modelos</span>
+          <span class="material-symbols-outlined arrow-icon">
+            {{ isModelosOpen ? "keyboard_arrow_up" : "keyboard_arrow_down" }}
+          </span>
         </router-link>
+
+        <!-- Submenu de Modelos -->
+        <div
+          class="sub-nav-link"
+          v-show="isModelosOpen">
+          <router-link
+            to="/modelos"
+            class="nav-link sub-link"
+            :class="{ 'router-link-active': isModelsDashboardActive }"
+            active-class="">
+            <span class="nav-text">Dashboard Modelos</span>
+          </router-link>
+          <router-link
+            to="/modelos/add"
+            class="nav-link sub-link"
+            :class="{ 'router-link-active': isModelsAddActive }">
+            <span class="nav-text">Cadastro de Modelos</span>
+          </router-link>
+        </div>
 
         <!-- Carros -->
         <router-link
           to="/"
           class="nav-link"
           :class="{ 'router-link-active': isCarrosActive }"
-          active-class="">
+          active-class=""
+          @click.prevent="toggleCarros">
           <span class="material-symbols-outlined icon-link-nav"
             >directions_car</span
           >
           <span class="nav-text">Carros</span>
+          <span class="material-symbols-outlined arrow-icon">
+            {{ isCarrosOpen ? "keyboard_arrow_up" : "keyboard_arrow_down" }}
+          </span>
         </router-link>
 
         <!-- Submenu de Carros -->
-        <div class="sub-nav-link">
+        <div
+          class="sub-nav-link"
+          v-show="isCarrosOpen">
           <router-link
             to="/"
             class="nav-link sub-link"
@@ -81,7 +112,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -103,6 +134,24 @@ const isEdit = computed(() => route.path === "/edit");
 const isCarrosActive = computed(() => {
   return ["/", "/add", "/edit"].includes(route.path);
 });
+
+// Controle de estado para o abrir e fechar o menu/submenu
+const isCarrosOpen = ref(false);
+function toggleCarros() {
+  isCarrosOpen.value = !isCarrosOpen.value;
+}
+
+const isModelsActive = computed(() => route.path.startsWith("/modelos"));
+// Submenu “Dashboard Modelos” apenas em /modelos
+const isModelsDashboardActive = computed(() => route.path === "/modelos");
+// Submenu “Cadastro de Modelos” apenas em /modelos/add
+const isModelsAddActive = computed(() => route.path === "/modelos/add");
+
+// Controle de estado para o abrir e fechar o menu/submenu de Modelos
+const isModelosOpen = ref(false);
+function toggleModelos() {
+  isModelosOpen.value = !isModelosOpen.value;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -145,6 +194,11 @@ const isCarrosActive = computed(() => {
     .icon-link-nav {
       font-size: 24px;
       margin-right: 16px;
+    }
+
+    .arrow-icon {
+      margin-left: auto;
+      font-size: 24px;
     }
   }
 
