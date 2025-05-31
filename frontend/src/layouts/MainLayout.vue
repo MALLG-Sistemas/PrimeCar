@@ -11,12 +11,15 @@
 
       <!-- Menu de Navegação da Sidebar -->
       <nav class="sidebar-nav">
+        <!-- Dashboard -->
         <router-link
           to="/"
-          class="nav-link">
+          class="nav-link router-link-active">
           <span class="material-symbols-outlined icon-link-nav">cottage</span>
           <span class="nav-text">Dashboard</span>
         </router-link>
+
+        <!-- Modelos -->
         <router-link
           to="/modelos"
           class="nav-link">
@@ -25,28 +28,37 @@
           >
           <span class="nav-text">Modelos</span>
         </router-link>
+
+        <!-- Carros -->
         <router-link
-          to="/veiculos"
-          class="nav-link">
+          to="/"
+          class="nav-link"
+          :class="{ 'router-link-active': isHome }">
           <span class="material-symbols-outlined icon-link-nav"
             >directions_car</span
           >
           <span class="nav-text">Carros</span>
         </router-link>
+
+        <!-- Submenu de Carros -->
         <div class="sub-nav-link">
           <router-link
-            to="/veiculos/lista"
-            class="nav-link sub-link">
+            to="/"
+            class="nav-link sub-link"
+            :class="{ 'router-link-active': isHome }"
+            active-class="">
             <span class="nav-text">Lista de Veículos</span>
           </router-link>
           <router-link
-            to="/veiculos/add"
-            class="nav-link sub-link">
+            to="/add"
+            class="nav-link sub-link"
+            :class="{ 'router-link-active': isAdd }">
             <span class="nav-text">Adicionar Veículo</span>
           </router-link>
           <router-link
-            to="/veiculos/editar"
-            class="nav-link sub-link">
+            to="/editar"
+            class="nav-link sub-link"
+            :class="{ 'router-link-active': isEdit }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
           </router-link>
         </div>
@@ -58,7 +70,15 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const isHome = computed(() => route.path === "/");
+const isAdd = computed(() => route.path === "/add");
+const isEdit = computed(() => route.path === "/editar");
+</script>
 
 <style lang="scss" scoped>
 @use "../styles/variables" as *;

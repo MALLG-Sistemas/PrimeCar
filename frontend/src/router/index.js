@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import MainLayout from "../layouts/MainLayout.vue"; // Importação do layout principal (Contendo a Sidebar)
 
-// Rotas do app
+// Rotas da Aplicação
 const routes = [
   {
     path: "/",
@@ -13,6 +13,13 @@ const routes = [
         component: () => import("../views/HomeView.vue"),
         meta: { title: "Home" },
       },
+      {
+        path: "/add",
+        name: "Add Veiculo",
+        component: () => import("../views/AddVeiculo.vue"),
+        meta: { title: "Add Veiculo" },
+      },
+
       // Rota 404 - Page Not Found:
       {
         path: "/:catchAll(.*)*",
