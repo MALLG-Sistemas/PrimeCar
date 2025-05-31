@@ -63,6 +63,15 @@
           </router-link>
         </div>
       </nav>
+
+      <!-- Footer da Sidebar -->
+      <div class="sidebar-footer">
+        <img
+          src="../../public/images/logo-mallg-sistemas.jpg"
+          alt="Logo MALLG Sistemas"
+          class="mallg-logo" />
+        <p class="footer-text">Copyright © 2025 PrimeCar</p>
+      </div>
     </aside>
     <main class="main-content">
       <router-view />
@@ -104,9 +113,13 @@ const isEdit = computed(() => route.path === "/edit");
   background-color: $color-bg-sidebar;
   padding-top: 20px;
   color: $color-light-text;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .sidebar-nav {
+  flex: 1;
   display: flex;
   flex-direction: column;
   margin-top: 24px;
@@ -140,6 +153,21 @@ const isEdit = computed(() => route.path === "/edit");
       padding: 8px 24px;
       font-size: 13px;
     }
+  }
+}
+
+/* Footer da Sidebar */
+.sidebar-footer {
+  text-align: center;
+  margin-top: 50px;
+
+  p {
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+
+  .mallg-logo {
+    max-width: 100%;
   }
 }
 
