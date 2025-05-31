@@ -32,9 +32,18 @@ INSTALLED_APPS = [
     # Adicionados apps e bibliotecas necessárias
     "rest_framework",
     "veiculos.apps.VeiculosConfig",
+    "corsheaders",  # Lida com CORS
 ]
 
+# Configuração do Django REST Framework
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,  # Quantidade de itens por página
+    # Faltará codificar a parte de autenticação
+}
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -125,3 +134,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# Configuração do CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # URL do frontend Vue em desenvolvimento
+    "http://127.0.0.1:5173",
+]

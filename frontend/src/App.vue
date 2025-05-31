@@ -1,15 +1,5 @@
 <template>
-  <ButtonComponent> Click Me </ButtonComponent>
-  <ButtonComponent> Click Me </ButtonComponent>
-  <ButtonComponent> Click Me </ButtonComponent>
-  <ButtonComponent> Click Me </ButtonComponent>
-  <ButtonComponent> Click Me </ButtonComponent>
-  <HomeView />
+  <router-view />
 </template>
 
-<script setup>
-import ButtonComponent from "./components/ButtonComponent.vue";
-import HomeView from "./views/HomeView.vue";
-</script>
-
-<style scoped></style>
+<script setup></script>

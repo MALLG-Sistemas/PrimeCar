@@ -1,5 +1,10 @@
 import { createApp } from "vue";
-import "./styles/main.scss";
 import App from "./App.vue";
+import "./styles/main.scss"; // Importação do arquivo de estilos principal
+import router from "./router"; // Importação de router que gerencia as rotas da aplicação
 
-createApp(App).mount("#app");
+const app = createApp(App);
+
+app.use(router); // Configuração do router na aplicação Vue
+
+app.mount("#app"); // Montagem da aplicação Vue no elemento com id "app"
