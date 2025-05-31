@@ -17,6 +17,14 @@
           <span class="material-symbols-outlined icon-link-nav">cottage</span>
           <span class="nav-text">Dashboard</span>
         </router-link>
+        <router-link
+          to="/modelos"
+          class="nav-link">
+          <span class="material-symbols-outlined icon-link-nav"
+            >traffic_jam</span
+          >
+          <span class="nav-text">Modelos</span>
+        </router-link>
       </nav>
     </aside>
     <main class="main-content">
@@ -46,6 +54,7 @@
   display: flex;
   flex-direction: column;
   margin-top: 24px;
+  gap: 15px;
 
   .nav-link {
     display: flex;
