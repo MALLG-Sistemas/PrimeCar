@@ -42,10 +42,8 @@
   align-items: center;
   justify-content: space-between;
   height: 79px;
-  padding: 15px 20px 0px 20px;
-
-  /* Falar com o grupo referente ao box-shadow */
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  padding: 15px 20px 5px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 25%);
 
   .navbar-left {
     display: flex;
