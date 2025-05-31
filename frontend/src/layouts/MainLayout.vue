@@ -25,6 +25,31 @@
           >
           <span class="nav-text">Modelos</span>
         </router-link>
+        <router-link
+          to="/veiculos"
+          class="nav-link">
+          <span class="material-symbols-outlined icon-link-nav"
+            >directions_car</span
+          >
+          <span class="nav-text">Carros</span>
+        </router-link>
+        <div class="sub-nav-link">
+          <router-link
+            to="/veiculos/lista"
+            class="nav-link sub-link">
+            <span class="nav-text">Lista de Veículos</span>
+          </router-link>
+          <router-link
+            to="/veiculos/add"
+            class="nav-link sub-link">
+            <span class="nav-text">Adicionar Veículo</span>
+          </router-link>
+          <router-link
+            to="/veiculos/editar"
+            class="nav-link sub-link">
+            <span class="nav-text">Visualizar/Editar Veículo</span>
+          </router-link>
+        </div>
       </nav>
     </aside>
     <main class="main-content">
@@ -71,6 +96,18 @@
     .icon-link-nav {
       font-size: 24px;
       margin-right: 16px;
+    }
+  }
+
+  .sub-nav-link {
+    display: flex;
+    flex-direction: column;
+    margin-left: 24px;
+    gap: 10px;
+
+    .sub-link {
+      padding: 8px 24px;
+      font-size: 13px;
     }
   }
 }
