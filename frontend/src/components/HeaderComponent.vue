@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: space-between;
   height: 79px;
-  padding: 0 20px;
+  padding: 15px 20px 0px 20px;
 
   /* Falar com o grupo referente ao box-shadow */
   /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
