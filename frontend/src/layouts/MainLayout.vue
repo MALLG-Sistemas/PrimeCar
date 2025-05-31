@@ -41,11 +41,7 @@
             <span
               class="arrow-icon material-symbols-outlined"
               :class="{ open: openMenu === 'modelos' }">
-              {{
-                openMenu === "modelos"
-                  ? "keyboard_arrow_up"
-                  : "keyboard_arrow_down"
-              }}
+              keyboard_arrow_down
             </span>
           </div>
         </router-link>
@@ -84,11 +80,7 @@
             <span
               class="arrow-icon material-symbols-outlined"
               :class="{ open: openMenu === 'carros' }">
-              {{
-                openMenu === "carros"
-                  ? "keyboard_arrow_up"
-                  : "keyboard_arrow_down"
-              }}
+              keyboard_arrow_down
             </span>
           </div>
         </router-link>
@@ -205,7 +197,8 @@ const toggleMenu = (menu) => {
     .arrow-icon {
       margin-left: auto;
       font-size: 24px;
-      transition: transform 0.2s ease;
+      transition: transform 0.3s ease;
+      transform: rotate(0);
 
       &.open {
         transform: rotate(180deg);
