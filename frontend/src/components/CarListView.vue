@@ -46,6 +46,8 @@
           <th>Cor</th>
           <th>Descrição</th>
           <th>Imagem</th>
+
+          <!-- Usar qual titulo para essa coluna? Aqui terá o button "Visualizar" -->
           <th>Ações</th>
         </tr>
       </thead>
