@@ -1,7 +1,7 @@
 <template>
   <header class="navbar">
     <div class="navbar-left">
-      <!-- Aqui vai faltar codificar o parte que recebe o nome do usuário logado -->
+      <!-- Futuramente aqui será codificado parte que recebe o nome do usuário logado -->
       <h1 class="welcome">Bem-vindo, Mauricio!</h1>
       <p class="subtitle">
         Gerencie marcas, modelos, frota, locações e usuários cadastrados.
@@ -12,7 +12,7 @@
         notifications
       </span>
 
-      <!-- Aqui vai faltar codificar o parte que recebe as informações do usuário logado -->
+      <!-- Futuramente será codificado a parte que recebe as informações do usuário logado -->
       <div class="user-info">
         <img
           class="user-photo"
