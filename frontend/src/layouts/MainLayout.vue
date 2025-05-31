@@ -9,9 +9,9 @@
           class="logo" />
       </div>
 
-      <!-- Menu de Navegação da Sidebar -->
+      <!-- Navegação da Sidebar -->
       <nav class="sidebar-nav">
-        <!-- Dashboard -->
+        <!-- Link "Dashboard" (Home Page) -->
         <router-link
           to="/"
           class="nav-link router-link-active">
@@ -19,12 +19,11 @@
           <span class="nav-text">Dashboard</span>
         </router-link>
 
-        <!-- Modelos -->
+        <!-- Link "Modelos" -->
         <router-link
           to="/modelos"
           class="nav-link"
           :class="{ 'router-link-active': isModelsActive }"
-          active-class=""
           @click.prevent="toggleModelos">
           <span class="material-symbols-outlined icon-link-nav"
             >traffic_jam</span
@@ -42,8 +41,7 @@
           <router-link
             to="/modelos"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': isModelsDashboardActive }"
-            active-class="">
+            :class="{ 'router-link-active': isModelsDashboardActive }">
             <span class="nav-text">Dashboard Modelos</span>
           </router-link>
           <router-link
@@ -54,7 +52,7 @@
           </router-link>
         </div>
 
-        <!-- Carros -->
+        <!-- Link "Carros" -->
         <router-link
           to="/"
           class="nav-link"
@@ -117,61 +115,53 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 
-/**
- * isHome:
- * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual for a página inicial ("/").
- *
- * isAdd:
- * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual corresponder à página "adicionar" ("/add").
- *
- * isEdit:
- * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual corresponder à página "editar" ("/edit").
- */
+// Propriedades computadas para verificar a rota ativa atual
 const isHome = computed(() => route.path === "/");
 const isAdd = computed(() => route.path === "/add");
 const isEdit = computed(() => route.path === "/edit");
 
+// Ativa o menu "Carros" quando a rota for uma das definidas
 const isCarrosActive = computed(() => {
   return ["/", "/add", "/edit"].includes(route.path);
 });
 
-// Controle de estado para o abrir e fechar o menu/submenu
+// Ativa o menu "Modelos" se o caminho iniciar com "/modelos"
+const isModelsActive = computed(() => route.path.startsWith("/modelos"));
+const isModelsDashboardActive = computed(() => route.path === "/modelos");
+const isModelsAddActive = computed(() => route.path === "/modelos/add");
+
+// Estados reativos para controle de exibição dos submenus
 const isCarrosOpen = ref(false);
-function toggleCarros() {
-  const open = !isCarrosOpen.value;
-  isCarrosOpen.value = open;
-  if (open) {
-    // Fecha o submenu de Modelos, quando o submenu de Carros é aberto
-    isModelosOpen.value = false;
+const isModelosOpen = ref(false);
+
+// Função genérica para alternar a abertura de um menu e fechar o outro
+function toggleMenu(currentMenu, otherMenu) {
+  currentMenu.value = !currentMenu.value;
+  if (currentMenu.value) {
+    otherMenu.value = false;
   }
 }
 
-const isModelsActive = computed(() => route.path.startsWith("/modelos"));
-// Submenu “Dashboard Modelos” apenas em /modelos
-const isModelsDashboardActive = computed(() => route.path === "/modelos");
-// Submenu “Cadastro de Modelos” apenas em /modelos/add
-const isModelsAddActive = computed(() => route.path === "/modelos/add");
+// Funções de alternância específicas para cada submenu
+function toggleCarros() {
+  toggleMenu(isCarrosOpen, isModelosOpen);
+}
 
-// Controle de estado para o abrir e fechar o menu/submenu de Modelos
-const isModelosOpen = ref(false);
 function toggleModelos() {
-  const open = !isModelosOpen.value;
-  isModelosOpen.value = open;
-  if (open) {
-    // Fecha o submenu de Carros, quando o submenu de Modelos é aberto
-    isCarrosOpen.value = false;
-  }
+  toggleMenu(isModelosOpen, isCarrosOpen);
 }
 </script>
 
 <style lang="scss" scoped>
 @use "../styles/variables" as *;
 
+/* Layout principal com sidebar e conteúdo */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
 }
 
+/* Siderbar Styles */
 .sidebar {
   width: 248px;
   background-color: $color-bg-sidebar;
@@ -197,6 +187,7 @@ function toggleModelos() {
     color: inherit;
     font-size: 14px;
 
+    /* Styles para o link ativo */
     &.router-link-active {
       background-color: $color-primary;
     }
@@ -224,7 +215,7 @@ function toggleModelos() {
   }
 }
 
-/* Footer da Sidebar */
+/* Footer da Sidebar Styles */
 .sidebar-footer {
   text-align: center;
   margin-top: 50px;
@@ -239,6 +230,7 @@ function toggleModelos() {
   }
 }
 
+/* Styles de main content */
 .main-content {
   flex-grow: 1;
   padding: 20px;
