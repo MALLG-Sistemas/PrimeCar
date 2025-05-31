@@ -55,11 +55,16 @@
             <span v-else>(Sem imagem)</span>
           </td>
           <td>
-            <button
-              class="button-table"
-              @click="verDetalhes(carro.id)">
+            <!-- ButtonComponent -->
+            <ButtonComponent
+              class="btn-table"
+              size="medium"
+              bgColor="#3D5E73"
+              textColor="#FFFFFF"
+              @click="() => verDetalhes(carro.id)">
               Visualizar
-            </button>
+            </ButtonComponent>
+
             <!-- Adicionar botões para editar/deletar futuramente -->
           </td>
         </tr>
@@ -71,6 +76,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import apiClient from "../services/api"; // Importação do cliente API
+import ButtonComponent from "./ButtonComponent.vue";
 
 const carros = ref([]);
 const loading = ref(true);
