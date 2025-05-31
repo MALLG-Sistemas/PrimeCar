@@ -115,11 +115,11 @@
 
       <!-- Footer da Sidebar -->
       <div class="sidebar-footer">
+        <p class="footer-text">PrimeCar - Copyright © 2025</p>
         <img
           src="/images/logo-mallg-sistemas.jpg"
           alt="Logo MALLG Sistemas"
           class="mallg-logo" />
-        <p class="footer-text">Copyright © 2025 PrimeCar</p>
       </div>
     </aside>
 
@@ -223,9 +223,8 @@ const toggleMenu = (menu) => {
   text-align: center;
   margin-top: auto;
 
-  p {
+  .footer-text {
     font-size: 12px;
-    margin-bottom: 32px;
   }
 
   .mallg-logo {
