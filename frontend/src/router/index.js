@@ -1,13 +1,27 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue"; // Importação do de HomeView (página inicial)
+import MainLayout from "../layouts/MainLayout.vue"; // Importação do layout principal (Contendo a Sidebar)
 
+// Rotas do app
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: HomeView,
+    component: MainLayout,
+    children: [
+      {
+        path: "",
+        name: "home",
+        component: () => import("../views/HomeView.vue"),
+        meta: { title: "Home" },
+      },
+      // Rota 404 - Page Not Found:
+      {
+        path: "/:catchAll(.*)*",
+        name: "NotFound",
+        component: () => import("../views/NotFound.vue"),
+        meta: { title: "Page Not Found" },
+      },
+    ],
   },
-  // Rotas a serem adicionadas
 ];
 
 const router = createRouter({
