@@ -1,6 +1,6 @@
 <template>
   <div class="car-list-view">
-    <h1>Lista de Veículos</h1>
+    <h1 class="title-veiculos">Veículos</h1>
     <div
       v-if="loading"
       class="loading">
@@ -23,9 +23,11 @@
       class="car-table">
       <thead>
         <tr>
-          <th>ID Carro</th>
-          <th>Marca</th>
-          <th>Modelo</th>
+          <th>Código</th>
+          <!-- <th>Marca</th> -->
+          <th>ID Modelo</th>
+
+          <!-- Verificar no backend qual entidade armazena Ano Modelo e qual armazena Ano Fabricação -->
           <th>Ano Modelo</th>
           <th>Ano Fabricação</th>
           <th>Cor</th>
@@ -39,7 +41,6 @@
           v-for="carro in carros"
           :key="carro.id">
           <td>{{ carro.id }}</td>
-          <td>{{ carro.modelo.nome_marca }}</td>
           <td>{{ carro.modelo.nome_modelo }}</td>
           <td>{{ carro.modelo.ano_modelo }}</td>
           <td>{{ carro.ano_fabricacao }}</td>
@@ -54,7 +55,11 @@
             <span v-else>(Sem imagem)</span>
           </td>
           <td>
-            <button @click="verDetalhes(carro.id)">Visualizar</button>
+            <button
+              class="button-table"
+              @click="verDetalhes(carro.id)">
+              Visualizar
+            </button>
             <!-- Adicionar botões para editar/deletar futuramente -->
           </td>
         </tr>
@@ -65,10 +70,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import apiClient from "../services/api"; // Importe seu serviço de API
-// import { useRouter } from 'vue-router'; // Se for usar o router para navegação
+import apiClient from "../services/api"; // Importação do cliente API
 
-// const router = useRouter(); // Se for usar o router
 const carros = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -115,8 +118,17 @@ const verDetalhes = (carroId) => {
 </script>
 
 <style scoped lang="scss">
+@use "../styles/variables" as *;
+
 .car-list-view {
-  padding: 20px;
+  padding: 44px 22px 18px 22px;
+
+  .title-veiculos {
+    font-family: $font-primary;
+    font-size: 29px;
+    font-weight: 500;
+    color: $color-text-secondary;
+  }
 }
 
 .loading,
@@ -126,6 +138,7 @@ const verDetalhes = (carroId) => {
   text-align: center;
   font-size: 1.2em;
 }
+
 .error {
   color: red;
 }
@@ -133,17 +146,22 @@ const verDetalhes = (carroId) => {
 .car-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 35px;
 
   th,
   td {
-    border: 1px solid #ddd;
-    padding: 8px;
+    border: 1px solid $color-border-table;
+    border-radius: 8px;
+    padding: 16px;
     text-align: left;
   }
 
   th {
-    background-color: #f2f2f2;
+    background-color: $color-light-bg;
+    font-family: $font-primary;
+    font-size: 16px;
+    color: $color-dark-text;
+    text-transform: uppercase;
   }
 }
 
