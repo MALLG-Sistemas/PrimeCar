@@ -25,6 +25,12 @@ const routes = [
         component: () => import("../views/EditVeiculo.vue"),
         meta: { title: "Editar Veiculo" },
       },
+      {
+        path: "/modelos",
+        name: "Modelos",
+        component: () => import("../views/ModelsView.vue"),
+        meta: { title: "Modelos" },
+      },
 
       // Rota 404 - Page Not Found:
       {

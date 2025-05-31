@@ -146,11 +146,10 @@ const isEdit = computed(() => route.path === "/edit");
   .sub-nav-link {
     display: flex;
     flex-direction: column;
-    margin-left: 24px;
     gap: 10px;
 
     .sub-link {
-      padding: 8px 24px;
+      padding: 8px 36px;
       font-size: 13px;
     }
   }
