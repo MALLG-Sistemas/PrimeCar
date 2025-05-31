@@ -4,7 +4,7 @@
       <!-- Logo do Sistema PrimeCar -->
       <div class="logo-container">
         <img
-          src="../../images/logo-primecar.jpg"
+          src="/images/logo-primecar.jpg"
           alt="Logo PrimeCar"
           class="logo" />
       </div>
@@ -99,7 +99,7 @@
       <!-- Footer da Sidebar -->
       <div class="sidebar-footer">
         <img
-          src="../../public/images/logo-mallg-sistemas.jpg"
+          src="/images/logo-mallg-sistemas.jpg"
           alt="Logo MALLG Sistemas"
           class="mallg-logo" />
         <p class="footer-text">Copyright © 2025 PrimeCar</p>
