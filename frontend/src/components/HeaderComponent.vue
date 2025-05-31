@@ -71,9 +71,12 @@
     align-items: center;
 
     .notification-icon {
-      font-size: 28px;
+      font-size: 26px;
       color: $color-text-secondary;
       margin-right: 15px;
+      border-radius: 4px;
+      border: 1px solid $color-text-tertiary;
+      padding: 8px;
     }
 
     .user-info {
