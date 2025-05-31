@@ -75,6 +75,17 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
+
+/**
+ * isHome:
+ * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual for a página inicial ("/").
+ *
+ * isAdd:
+ * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual corresponder à página "adicionar" ("/add").
+ *
+ * isEdit:
+ * Uma propriedade computada que retorna verdadeiro se o caminho da rota atual corresponder à página "editar" ("/edit").
+ */
 const isHome = computed(() => route.path === "/");
 const isAdd = computed(() => route.path === "/add");
 const isEdit = computed(() => route.path === "/edit");
