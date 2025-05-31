@@ -1,6 +1,12 @@
 <template>
   <div class="dashboard-layout">
     <aside class="sidebar">
+      <div class="logo-container">
+        <img
+          src="../../images/logo-primecar.jpg"
+          alt="Logo PrimeCar"
+          class="logo" />
+      </div>
       <!-- Codificar o menu -->
     </aside>
     <main class="main-content">
@@ -22,7 +28,7 @@
 .sidebar {
   width: 248px;
   background-color: $color-bg-sidebar;
-  padding: 20px;
+  padding-top: 20px;
   color: $color-light-text;
 }
 
