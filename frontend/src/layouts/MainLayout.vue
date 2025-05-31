@@ -1,13 +1,23 @@
 <template>
   <div class="dashboard-layout">
     <aside class="sidebar">
+      <!-- Logo do Sistema PrimeCar -->
       <div class="logo-container">
         <img
           src="../../images/logo-primecar.jpg"
           alt="Logo PrimeCar"
           class="logo" />
       </div>
-      <!-- Codificar o menu -->
+
+      <!-- Menu de Navegação da Sidebar -->
+      <nav class="sidebar-nav">
+        <router-link
+          to="/"
+          class="nav-link">
+          <span class="material-symbols-outlined icon-link-nav">cottage</span>
+          <span class="nav-text">Dashboard</span>
+        </router-link>
+      </nav>
     </aside>
     <main class="main-content">
       <router-view />
@@ -30,6 +40,30 @@
   background-color: $color-bg-sidebar;
   padding-top: 20px;
   color: $color-light-text;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    text-decoration: none;
+    color: inherit;
+    font-size: 14px;
+
+    &.router-link-active {
+      background-color: $color-primary;
+    }
+
+    .icon-link-nav {
+      font-size: 24px;
+      margin-right: 16px;
+    }
+  }
 }
 
 .main-content {
