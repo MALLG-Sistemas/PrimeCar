@@ -33,7 +33,8 @@
         <router-link
           to="/"
           class="nav-link"
-          :class="{ 'router-link-active': isHome }">
+          :class="{ 'router-link-active': isCarrosActive }"
+          active-class="">
           <span class="material-symbols-outlined icon-link-nav"
             >directions_car</span
           >
@@ -98,6 +99,10 @@ const route = useRoute();
 const isHome = computed(() => route.path === "/");
 const isAdd = computed(() => route.path === "/add");
 const isEdit = computed(() => route.path === "/edit");
+
+const isCarrosActive = computed(() => {
+  return ["/", "/add", "/edit"].includes(route.path);
+});
 </script>
 
 <style lang="scss" scoped>
