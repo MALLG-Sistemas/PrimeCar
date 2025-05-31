@@ -23,7 +23,7 @@
   justify-content: center;
   text-align: center;
   padding: 2rem;
-  background-color: #6c757d;
+  background-color: $color-light-bg;
 
   &__container {
     max-width: 500px;
@@ -31,19 +31,19 @@
 
     h1 {
       font-size: 6rem;
-      color: #000;
+      color: $color-dark-text;
       margin: 0;
       line-height: 1;
     }
 
     h2 {
       font-size: 2rem;
-      color: #325615;
+      color: $color-text-secondary;
       margin: 1rem 0;
     }
 
     p {
-      color: #6c757d;
+      color: $color-text-secondary;
       margin-bottom: 2rem;
     }
   }
@@ -51,8 +51,8 @@
   &__button {
     display: inline-block;
     padding: 0.8rem 1.6rem;
-    background-color: #145452;
-    color: #414562;
+    background-color: $color-button-primary;
+    color: $color-light-text;
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.3s ease;
