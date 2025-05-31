@@ -1,13 +1,36 @@
 <template>
   <button
-    class="btn btn-primary"
+    class="btn-custom"
+    :class="buttonClass"
+    :style="buttonStyle"
     @click="handleClick">
+    <slot>Click Me</slot>
   </button>
 </template>
 
 <script setup>
-// import { ref } from "vue";
+import { computed } from "vue";
 
+// Props que o componente aceitará
+const props = defineProps({
+  // Tamanho do botão
+  size: {
+    type: String,
+    default: "medium",
+  },
+  // Cor de fundo do botão
+  bgColor: {
+    type: String,
+    default: "#007bff", // Azul padrão
+  },
+  // Cor do texto do botão
+  textColor: {
+    type: String,
+    default: "#ffffff", // Branco padrão
+  },
+});
+
+// Função/Evento para lidar com o clique do botãos
 const handleClick = () => {
   console.log("Button clicked!");
 };
@@ -16,12 +39,12 @@ const handleClick = () => {
 </script>
 
 <style lang="scss" scoped>
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
+.btn-custom {
+  transition: background-color 0.3s ease;
+
+  // Ajustar a cor do hover
+  &:hover {
+    background-color: darken(var(--bg-color), 10%);
+  }
 }
 </style>
