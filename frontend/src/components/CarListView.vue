@@ -61,7 +61,7 @@
           <td>{{ carro.ano_fabricacao }}</td>
           <td>{{ carro.cor }}</td>
           <td>{{ carro.descricao_carro }}</td>
-          <td>
+          <td class="td-car-image">
             <img
               v-if="carro.imagem_principal_url"
               :src="carro.imagem_principal_url"
@@ -241,6 +241,13 @@ const formatDate = (isoDate) => {
         }
       }
     }
+
+    .td-car-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+    }
   }
 }
 
@@ -250,5 +257,6 @@ const formatDate = (isoDate) => {
   object-fit: cover;
   width: 100%;
   height: auto;
+  border-radius: 6px;
 }
 </style>
