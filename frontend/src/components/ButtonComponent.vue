@@ -34,6 +34,9 @@ const props = defineProps({
   },
 });
 
+// Emissão de eventos para o componente pai
+const emit = defineEmits(["click"]);
+
 // Computed para definir a classe do botão
 const buttonClass = computed(() => ({
   "btn-custom": true,
@@ -63,8 +66,8 @@ const buttonStyle = computed(() => ({
 }));
 
 // Função/Evento para lidar com o clique do botãos
-const handleClick = () => {
-  console.log("Button clicked!");
+const handleClick = (event) => {
+  emit("click", event);
 };
 </script>
 

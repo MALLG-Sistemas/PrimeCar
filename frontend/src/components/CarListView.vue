@@ -3,18 +3,30 @@
     <div class="container-header">
       <h1 class="title-veiculos">Veículos</h1>
 
-      <!-- Search Input ***** NÃO ESQUECER DE IMPLEMENTAR A LÓGICA DE PESQUISA NA LISTA DE CARROS -->
-      <div class="search-wrapper">
-        <span class="material-symbols-outlined search-icon">search</span>
-        <input
-          type="text"
-          id="search-veiculos"
-          name="search-veiculos"
-          placeholder="Pesquisar veículos..."
-          class="search-input" />
-      </div>
+      <div class="container-header-right">
+        <!-- Search Input ***** NÃO ESQUECER DE IMPLEMENTAR A LÓGICA DE PESQUISA NA LISTA DE CARROS -->
+        <div class="search-wrapper">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input
+            type="text"
+            id="search-veiculos"
+            name="search-veiculos"
+            placeholder="Pesquisar veículos..."
+            class="search-input"
+            v-model="searchTerm" />
+        </div>
 
-      <!-- Falta o button de Adicionar Veículo -->
+        <!-- Botão para navegar para a página de adicionar veículo -->
+        <ButtonComponent
+          class="btn-add-car"
+          size="medium"
+          bgColor="#3D5E73"
+          textColor="#FFFFFF"
+          fontSize="14px"
+          @click="handleAddCar">
+          Add Veículo
+        </ButtonComponent>
+      </div>
     </div>
     <div
       v-if="loading"
@@ -39,15 +51,12 @@
       <thead>
         <tr>
           <th>ID/Código</th>
-          <!-- <th>Marca</th> -->
           <th>ID Modelo</th>
           <th>Data de Cadastro</th>
           <th>Ano Fabricação</th>
           <th>Cor</th>
           <th>Descrição</th>
           <th>Imagem</th>
-
-          <!-- Usar qual titulo para essa coluna? Aqui terá o button "Visualizar" -->
           <th>Ações</th>
         </tr>
       </thead>
@@ -75,7 +84,7 @@
             <!-- ButtonComponent -->
             <ButtonComponent
               class="btn-table"
-              size="medium"
+              size="small"
               bgColor="#3D5E73"
               textColor="#FFFFFF"
               fontSize="14px"
@@ -93,8 +102,12 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import apiClient from "../services/api"; // Importação do cliente API
 import ButtonComponent from "./ButtonComponent.vue";
+
+// Declaração do router
+const router = useRouter();
 
 const carros = ref([]);
 const loading = ref(true);
@@ -137,8 +150,12 @@ onMounted(() => {
 
 const verDetalhes = (carroId) => {
   console.log("Visualizar detalhes do carro ID:", carroId);
-  // Aqui você usaria o router para navegar para a página de detalhes
   // router.push({ name: 'CarDetail', params: { id: carroId } });
+};
+
+// Função para lidar com o clique do botão "Add Veículo" e navegar para a página de adicionar veículo
+const handleAddCar = () => {
+  router.push({ name: "Add Veiculo" });
 };
 
 // Falta Codificar a lógico do search input, para pesquisar na lista de carros
@@ -189,6 +206,12 @@ const formatDate = (isoDate) => {
     border: none;
     outline: none;
     flex: 1;
+  }
+
+  .container-header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
   }
 }
 
