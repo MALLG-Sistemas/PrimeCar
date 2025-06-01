@@ -1,56 +1,51 @@
 <template>
-  <div class="car-list-view">
-    <div class="container-header">
-      <h1 class="title-veiculos">Veículos</h1>
+  <div class="car-list">
+    <header class="car-list__header">
+      <h1 class="car-list__title">Veículos</h1>
 
-      <div class="container-header-right">
-        <!-- Search Input ***** NÃO ESQUECER DE IMPLEMENTAR A LÓGICA DE PESQUISA NA LISTA DE CARROS -->
-        <div class="search-wrapper">
-          <span class="material-symbols-outlined search-icon">search</span>
+      <div class="car-list__actions">
+        <div class="car-list__search">
+          <span class="material-symbols-outlined">search</span>
           <input
+            v-model="searchTerm"
             type="text"
-            id="search-veiculos"
-            name="search-veiculos"
             placeholder="Pesquisar veículos..."
-            class="search-input"
-            v-model="searchTerm" />
+            class="car-list__search-input" />
         </div>
 
-        <!-- Botão para navegar para a página de adicionar veículo -->
         <ButtonComponent
-          class="btn-add-car"
+          class="car-list__add-button"
           size="medium"
           bgColor="#3D5E73"
           textColor="#FFFFFF"
           fontSize="14px"
-          @click="handleAddCar">
+          @click="navigateToAddCar">
           Add Veículo
         </ButtonComponent>
       </div>
-    </div>
-    <div
-      v-if="loading"
-      class="loading">
+    </header>
+
+    <section
+      v-if="isLoading"
+      class="car-list__status">
       Carregando veículos...
-    </div>
-    <div
-      v-if="error"
-      class="error">
-      {{ error }}
-    </div>
-
-    <div
-      v-if="!loading && !error && carros.length === 0"
-      class="no-cars">
+    </section>
+    <section
+      v-else-if="errorMessage"
+      class="car-list__status car-list__status--error">
+      {{ errorMessage }}
+    </section>
+    <section
+      v-else-if="filteredCars.length === 0"
+      class="car-list__status car-list__status--empty">
       Nenhum veículo encontrado.
-    </div>
-
+    </section>
     <table
-      v-if="!loading && !error && carros.length > 0"
-      class="car-table">
+      v-else
+      class="car-list__table">
       <thead>
         <tr>
-          <th>ID/Código</th>
+          <th>ID</th>
           <th>ID Modelo</th>
           <th>Data de Cadastro</th>
           <th>Ano Fabricação</th>
@@ -62,32 +57,30 @@
       </thead>
       <tbody>
         <tr
-          v-for="carro in filteredCarros"
-          :key="carro.id">
-          <td>{{ carro.id }}</td>
-          <td>{{ carro.modelo.id }}</td>
-          <td>{{ formatDate(carro.data_cadastro) }}</td>
-          <td>{{ carro.ano_fabricacao }}</td>
-          <td>{{ carro.cor }}</td>
-          <td>{{ carro.descricao_carro }}</td>
-          <td class="td-car-image">
-            <!-- Acessibilidade: adicionando alt para a imagem -->
+          v-for="car in filteredCars"
+          :key="car.id">
+          <td>{{ car.id }}</td>
+          <td>{{ car.modelo.id }}</td>
+          <td>{{ formatDate(car.data_cadastro) }}</td>
+          <td>{{ car.ano_fabricacao }}</td>
+          <td>{{ car.cor }}</td>
+          <td>{{ car.descricao_carro }}</td>
+          <td>
             <img
-              v-if="carro.imagem_principal_url"
-              :src="carro.imagem_principal_url"
-              :alt="'Imagem de ' + carro.modelo.nome_modelo"
-              class="car-thumbnail" />
-            <span v-else>(Sem imagem)</span>
+              v-if="car.imagem_principal_url"
+              :src="car.imagem_principal_url"
+              :alt="`Imagem de ${car.modelo.nome_modelo}`"
+              class="car-list__image" />
+            <span v-else>Sem imagem</span>
           </td>
           <td>
-            <!-- ButtonComponent Reutilizado -->
             <ButtonComponent
-              class="btn-table"
+              class="car-list__view-button"
               size="small"
               bgColor="#3D5E73"
               textColor="#FFFFFF"
               fontSize="14px"
-              @click="() => verDetalhes(carro.id)">
+              @click="navigateToDetails(car.id)">
               Visualizar
             </ButtonComponent>
           </td>
@@ -98,210 +91,198 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import apiClient from "../services/api"; // Importação do cliente API
+import apiClient from "../services/api";
 import ButtonComponent from "./ButtonComponent.vue";
 
-// Declaração do router
+// Estado reativos
+const cars = ref([]);
+const isLoading = ref(true);
+const errorMessage = ref("");
+const searchTerm = ref("");
+
+// Declaração de router
 const router = useRouter();
 
-const carros = ref([]);
-const loading = ref(true);
-const error = ref(null);
-const searchTerm = ref(""); // Estado para o termo de pesquisa
+// Fetch dos dados
+const fetchCars = async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
 
-const fetchCarros = async () => {
-  loading.value = true;
-  error.value = null;
   try {
     const response = await apiClient.getCarros();
-    carros.value = Array.isArray(response.data.results)
+    cars.value = Array.isArray(response.data.results)
       ? response.data.results
       : [];
-
-    // Log para verificar os dados recebidos
-    console.log("Carros recebidos:", carros.value);
-  } catch (err) {
-    console.error("Erro ao buscar carros:", err);
-    error.value = "Falha ao carregar os veículos. Tente novamente mais tarde.";
-    if (err.response) {
-      // O servidor respondeu com um status code de error
-      console.error("Dados do erro:", err.response.data);
-      console.error("Status do erro:", err.response.status);
-      error.value += ` (Status: ${err.response.status})`;
-    } else if (err.request) {
-      // A requisição foi feita mas não houve resposta
-      console.error("Requisição do erro:", err.request);
-      error.value =
-        "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está rodando.";
-    } else {
-      // Algo aconteceu ao configurar a requisição que acionou um erro
-      console.error("Mensagem de erro:", err.message);
-    }
+  } catch (error) {
+    handleError(error);
   } finally {
-    loading.value = false;
+    isLoading.value = false;
   }
 };
 
-// Chamada simples
-onMounted(fetchCarros);
-
-// Propriedade computada para filtrar os carros com base no termo de pesquisa
-const filteredCarros = computed(() => {
-  if (!searchTerm.value) {
-    return carros.value;
+// Tratamento de erro dos dados recebidos da API
+const handleError = (error) => {
+  if (error.response) {
+    errorMessage.value = `Erro ${error.response.status}: ${
+      error.response.data?.detail || "Falha na API"
+    }`;
+  } else if (error.request) {
+    errorMessage.value = "Sem resposta do servidor. Verifique sua conexão.";
+  } else {
+    errorMessage.value = `Erro: ${error.message}`;
   }
-  const lowerSearchTerm = searchTerm.value.toLowerCase();
-  return carros.value.filter((carro) => {
+};
+
+// Propriedade computada para a pesquisa
+const filteredCars = computed(() => {
+  const term = searchTerm.value.trim().toLowerCase();
+  if (!term) return cars.value;
+
+  return cars.value.filter((car) => {
     return (
-      carro.id.toString().includes(lowerSearchTerm) ||
-      carro.modelo.id.toString().includes(lowerSearchTerm) ||
-      (carro.modelo.nome_modelo &&
-        carro.modelo.nome_modelo.toLowerCase().includes(lowerSearchTerm)) ||
-      carro.cor.toLowerCase().includes(lowerSearchTerm) ||
-      (carro.descricao_carro &&
-        carro.descricao_carro.toLowerCase().includes(lowerSearchTerm)) ||
-      carro.ano_fabricacao.toString().includes(lowerSearchTerm)
+      car.id.toString().includes(term) ||
+      car.modelo.id.toString().includes(term) ||
+      (car.modelo.nome_modelo || "").toLowerCase().includes(term) ||
+      (car.cor || "").toLowerCase().includes(term) ||
+      (car.descricao_carro || "").toLowerCase().includes(term) ||
+      car.ano_fabricacao.toString().includes(term)
     );
   });
 });
 
-const verDetalhes = (carroId) => {
-  console.log("Visualizar detalhes do carro ID:", carroId);
-  // router.push({ name: 'CarDetail', params: { id: carroId } });
+/* Lida com a navegação dos botões, direciona para a
+ * página de adicionar veículo ou detalhes do veículo
+ */
+const navigateToAddCar = () => router.push({ name: "Add Veiculo" });
+const navigateToDetails = (id) =>
+  router.push({ name: "CarDetail", params: { id } });
+
+// Função para formatar a data no estilo brasileiro
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("pt-BR");
 };
 
-// Função para lidar com o clique do botão "Add Veículo" e navegar para a página de adicionar veículo
-const handleAddCar = () => {
-  router.push({ name: "Add Veiculo" });
-};
-
-// Função para formatação de data
-const formatDate = (isoDate) => {
-  if (!isoDate) return "";
-  const date = new Date(isoDate);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+// Lifecycle
+onMounted(fetchCars);
 </script>
 
 <style scoped lang="scss">
 @use "../styles/variables" as *;
 
-.car-list-view {
-  padding: 44px 22px 18px 22px;
+.car-list {
+  padding: 44px 22px;
 
-  .title-veiculos {
+  &__title {
     font-family: $font-primary;
     font-size: 29px;
     font-weight: 500;
     color: $color-text-secondary;
   }
-}
 
-.container-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
-  .search-wrapper {
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  &__search {
     display: flex;
     align-items: center;
     width: 350px;
     padding: 12px 16px;
     gap: 8px;
-    color: $color-text-tertiary;
-    border-radius: 6px;
     border: 1px solid $color-border-table;
-  }
+    border-radius: 6px;
+    color: $color-text-tertiary;
+    background-color: white;
 
-  .search-input {
-    border: none;
-    outline: none;
-    flex: 1;
-  }
-
-  .container-header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-}
-
-.loading,
-.error,
-.no-cars {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 1.2em;
-}
-
-.error {
-  color: red;
-}
-
-.car-table {
-  width: 100%;
-  margin-top: 35px;
-  overflow: hidden;
-  border: 1px solid $color-border-table;
-  border-radius: 8px;
-  border-collapse: separate;
-  border-spacing: 0;
-
-  thead {
-    tr {
-      max-height: 61px;
-      th {
-        padding: 16px;
-        text-align: left;
-        color: $color-dark-text;
-        font-family: $font-primary;
-        font-size: 16px;
-        font-weight: 600;
-        background-color: $color-light-bg;
-        text-transform: uppercase;
-        border-bottom: 1px dashed $color-border-table;
-      }
+    &-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      background-color: transparent;
     }
   }
 
-  tbody {
-    tr {
-      td {
-        max-height: 61px;
-        padding-inline: 16px;
-        text-align: left;
-        color: $color-dark-text;
-        font-family: $font-primary;
-        font-size: 14px;
-        font-weight: 600;
-        border-bottom: 1px dashed $color-border-table;
-        text-transform: uppercase;
-      }
-      &:last-child {
-        td {
-          border-bottom: none;
+  &__status {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 1.2em;
+    color: $color-dark-text;
+
+    &--error {
+      color: red;
+    }
+
+    &--empty {
+      color: $color-text-tertiary;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    margin-top: 35px;
+    border: 1px solid $color-border-table;
+    border-radius: 8px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+
+    thead {
+      tr {
+        th {
+          padding: 16px;
+          text-align: left;
+          color: $color-dark-text;
+          font-family: $font-primary;
+          font-size: 16px;
+          font-weight: 600;
+          background-color: $color-light-bg;
+          text-transform: uppercase;
+          border-bottom: 1px dashed $color-border-table;
         }
       }
     }
 
-    .td-car-image {
-      padding: 8px 16px;
+    tbody {
+      tr {
+        td {
+          padding: 8px 16px;
+          color: $color-dark-text;
+          font-family: $font-primary;
+          font-size: 14px;
+          font-weight: 600;
+          border-bottom: 1px dashed $color-border-table;
+          text-transform: uppercase;
+        }
+
+        &:last-child {
+          td {
+            border-bottom: none;
+          }
+        }
+      }
     }
   }
-}
 
-.car-thumbnail {
-  max-width: 192px;
-  max-height: 51px;
-  object-fit: cover;
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
+  &__image {
+    max-width: 192px;
+    max-height: 51px;
+    object-fit: cover;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
 }
 </style>
