@@ -68,6 +68,14 @@ class CarroSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.imagem_principal.url)
         return None
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.id:
+            rep["id"] = (
+                f"{instance.id:04d}"  # Formata o ID como 0001, 0002, etc., ou seja renderiza sempre digitos
+            )
+        return rep
+
     def create(self, validated_data):
         return super().create(validated_data)
 
