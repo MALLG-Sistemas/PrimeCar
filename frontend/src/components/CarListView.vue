@@ -36,12 +36,10 @@
       class="car-table">
       <thead>
         <tr>
-          <th>Código</th>
+          <th>ID/Código</th>
           <!-- <th>Marca</th> -->
           <th>ID Modelo</th>
-
-          <!-- Verificar no backend qual entidade armazena Ano Modelo e qual armazena Ano Fabricação -->
-          <th>Ano Modelo</th>
+          <th>Data de Cadastro</th>
           <th>Ano Fabricação</th>
           <th>Cor</th>
           <th>Descrição</th>
@@ -56,8 +54,10 @@
           v-for="carro in carros"
           :key="carro.id">
           <td>{{ carro.id }}</td>
+
+          <!-- Ajusta para ID do modelo -->
           <td>{{ carro.modelo.nome_modelo }}</td>
-          <td>{{ carro.modelo.ano_modelo }}</td>
+          <td>{{ formatDate(carro.data_cadastro) }}</td>
           <td>{{ carro.ano_fabricacao }}</td>
           <td>{{ carro.cor }}</td>
           <td>{{ carro.descricao_carro }}</td>
@@ -103,7 +103,8 @@ const fetchCarros = async () => {
   try {
     const response = await apiClient.getCarros();
     carros.value = response.data.results; // Ajuste se sua API DRF usar paginação (results)
-    // Se não usar paginação, pode ser apenas response.data
+
+    // Log para verificar os dados recebidos
     console.log("Carros recebidos:", carros.value);
   } catch (err) {
     console.error("Erro ao buscar carros:", err);
@@ -138,6 +139,16 @@ const verDetalhes = (carroId) => {
 };
 
 // Falta Codificar a lógico do search input, para pesquisar na lista de carros
+
+// Função para formatação de data
+const formatDate = (isoDate) => {
+  if (!isoDate) return "";
+  const date = new Date(isoDate);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 </script>
 
 <style scoped lang="scss">
@@ -192,29 +203,52 @@ const verDetalhes = (carroId) => {
 
 .car-table {
   width: 100%;
-  border-collapse: collapse;
   margin-top: 35px;
+  overflow: hidden;
+  border: 1px solid $color-border-table;
+  border-radius: 8px;
+  border-collapse: separate;
+  border-spacing: 0;
 
-  th,
-  td {
-    border: 1px solid $color-border-table;
-    border-radius: 8px;
-    padding: 16px;
-    text-align: left;
+  thead {
+    th {
+      padding: 16px;
+      text-align: left;
+      color: $color-dark-text;
+      font-family: $font-primary;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: $color-light-bg;
+      text-transform: uppercase;
+      border-bottom: 1px dashed $color-border-table;
+    }
   }
 
-  th {
-    background-color: $color-light-bg;
-    font-family: $font-primary;
-    font-size: 16px;
-    color: $color-dark-text;
-    text-transform: uppercase;
+  tbody {
+    tr {
+      td {
+        padding: 16px;
+        text-align: left;
+        color: $color-dark-text;
+        font-family: $font-primary;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 1px dashed $color-border-table;
+      }
+      &:last-child {
+        td {
+          border-bottom: none;
+        }
+      }
+    }
   }
 }
 
 .car-thumbnail {
-  max-width: 100px;
-  max-height: 70px;
+  max-width: 192px;
+  max-height: 61px;
   object-fit: cover;
+  width: 100%;
+  height: auto;
 }
 </style>
