@@ -8,6 +8,8 @@
         <span class="material-symbols-outlined search-icon">search</span>
         <input
           type="text"
+          id="search-veiculos"
+          name="search-veiculos"
           placeholder="Pesquisar veículos..."
           class="search-input" />
       </div>
@@ -76,6 +78,7 @@
               size="medium"
               bgColor="#3D5E73"
               textColor="#FFFFFF"
+              fontSize="14px"
               @click="() => verDetalhes(carro.id)">
               Visualizar
             </ButtonComponent>
@@ -211,29 +214,34 @@ const formatDate = (isoDate) => {
   border-spacing: 0;
 
   thead {
-    th {
-      padding: 16px;
-      text-align: left;
-      color: $color-dark-text;
-      font-family: $font-primary;
-      font-size: 16px;
-      font-weight: 600;
-      background-color: $color-light-bg;
-      text-transform: uppercase;
-      border-bottom: 1px dashed $color-border-table;
-    }
-  }
-
-  tbody {
     tr {
-      td {
+      max-height: 61px;
+      th {
         padding: 16px;
         text-align: left;
         color: $color-dark-text;
         font-family: $font-primary;
         font-size: 16px;
         font-weight: 600;
+        background-color: $color-light-bg;
+        text-transform: uppercase;
         border-bottom: 1px dashed $color-border-table;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      td {
+        max-height: 61px;
+        padding-inline: 16px;
+        text-align: left;
+        color: $color-dark-text;
+        font-family: $font-primary;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 1px dashed $color-border-table;
+        text-transform: uppercase;
       }
       &:last-child {
         td {
@@ -253,7 +261,7 @@ const formatDate = (isoDate) => {
 
 .car-thumbnail {
   max-width: 192px;
-  max-height: 61px;
+  max-height: 51px;
   object-fit: cover;
   width: 100%;
   height: auto;

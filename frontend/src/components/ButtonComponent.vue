@@ -27,6 +27,11 @@ const props = defineProps({
     type: String,
     default: "#ffffff",
   },
+  // Font Size do botão
+  fontSize: {
+    type: String,
+    default: "16px",
+  },
 });
 
 // Computed para definir a classe do botão
@@ -45,6 +50,8 @@ const sizeStyles = {
 const buttonStyle = computed(() => ({
   backgroundColor: props.bgColor,
   color: props.textColor,
+  fontSize: props.fontSize,
+  fontWeight: "600",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
