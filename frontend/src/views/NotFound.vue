@@ -23,7 +23,6 @@
   justify-content: center;
   text-align: center;
   padding: 2rem;
-  background-color: $color-light-bg;
 
   &__container {
     max-width: 500px;

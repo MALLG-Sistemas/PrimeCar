@@ -56,7 +56,7 @@
           <td>{{ carro.id }}</td>
 
           <!-- Ajusta para ID do modelo -->
-          <td>{{ carro.modelo.nome_modelo }}</td>
+          <td>{{ carro.modelo.id }}</td>
           <td>{{ formatDate(carro.data_cadastro) }}</td>
           <td>{{ carro.ano_fabricacao }}</td>
           <td>{{ carro.cor }}</td>
