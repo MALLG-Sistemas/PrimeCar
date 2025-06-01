@@ -238,7 +238,7 @@ const formatDate = (isoDate) => {
         text-align: left;
         color: $color-dark-text;
         font-family: $font-primary;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
         border-bottom: 1px dashed $color-border-table;
         text-transform: uppercase;
@@ -251,9 +251,6 @@ const formatDate = (isoDate) => {
     }
 
     .td-car-image {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 8px 16px;
     }
   }
