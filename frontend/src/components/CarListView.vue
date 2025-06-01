@@ -9,6 +9,8 @@
           <input
             v-model="searchTerm"
             type="text"
+            id="search"
+            name="search"
             placeholder="Pesquisar veículos..."
             class="car-list__search-input" />
         </div>
@@ -51,7 +53,7 @@
           <th>Ano Fabricação</th>
           <th>Cor</th>
           <th>Descrição</th>
-          <th>Imagem</th>
+          <th>Foto/Imagem</th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -247,8 +249,8 @@ onMounted(fetchCars);
           color: $color-dark-text;
           font-family: $font-primary;
           font-size: 16px;
-          font-weight: 600;
-          background-color: $color-light-bg;
+          font-weight: 700;
+          line-height: 24px;
           text-transform: uppercase;
           border-bottom: 1px dashed $color-border-table;
         }
@@ -261,7 +263,7 @@ onMounted(fetchCars);
           padding: 8px 16px;
           color: $color-dark-text;
           font-family: $font-primary;
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 600;
           border-bottom: 1px dashed $color-border-table;
           text-transform: uppercase;
@@ -277,11 +279,13 @@ onMounted(fetchCars);
   }
 
   &__image {
-    max-width: 192px;
+    max-width: 90px;
     max-height: 51px;
-    object-fit: cover;
     width: 100%;
     height: auto;
+    display: flex;
+    justify-content: center;
+    object-fit: cover;
     border-radius: 6px;
   }
 }
