@@ -62,17 +62,16 @@
       </thead>
       <tbody>
         <tr
-          v-for="carro in carros"
+          v-for="carro in filteredCarros"
           :key="carro.id">
           <td>{{ carro.id }}</td>
-
-          <!-- Ajusta para ID do modelo -->
           <td>{{ carro.modelo.id }}</td>
           <td>{{ formatDate(carro.data_cadastro) }}</td>
           <td>{{ carro.ano_fabricacao }}</td>
           <td>{{ carro.cor }}</td>
           <td>{{ carro.descricao_carro }}</td>
           <td class="td-car-image">
+            <!-- Acessibilidade: adicionando alt para a imagem -->
             <img
               v-if="carro.imagem_principal_url"
               :src="carro.imagem_principal_url"
@@ -81,7 +80,7 @@
             <span v-else>(Sem imagem)</span>
           </td>
           <td>
-            <!-- ButtonComponent -->
+            <!-- ButtonComponent Reutilizado -->
             <ButtonComponent
               class="btn-table"
               size="small"
@@ -91,8 +90,6 @@
               @click="() => verDetalhes(carro.id)">
               Visualizar
             </ButtonComponent>
-
-            <!-- Adicionar botões para editar/deletar futuramente -->
           </td>
         </tr>
       </tbody>
@@ -101,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "../services/api"; // Importação do cliente API
 import ButtonComponent from "./ButtonComponent.vue";
@@ -112,13 +109,16 @@ const router = useRouter();
 const carros = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const searchTerm = ref(""); // Estado para o termo de pesquisa
 
 const fetchCarros = async () => {
   loading.value = true;
   error.value = null;
   try {
     const response = await apiClient.getCarros();
-    carros.value = response.data.results; // Ajuste se sua API DRF usar paginação (results)
+    carros.value = Array.isArray(response.data.results)
+      ? response.data.results
+      : [];
 
     // Log para verificar os dados recebidos
     console.log("Carros recebidos:", carros.value);
@@ -126,7 +126,7 @@ const fetchCarros = async () => {
     console.error("Erro ao buscar carros:", err);
     error.value = "Falha ao carregar os veículos. Tente novamente mais tarde.";
     if (err.response) {
-      // O servidor respondeu com um status de erro (4xx, 5xx)
+      // O servidor respondeu com um status code de error
       console.error("Dados do erro:", err.response.data);
       console.error("Status do erro:", err.response.status);
       error.value += ` (Status: ${err.response.status})`;
@@ -144,8 +144,27 @@ const fetchCarros = async () => {
   }
 };
 
-onMounted(() => {
-  fetchCarros();
+// Chamada simples
+onMounted(fetchCarros);
+
+// Propriedade computada para filtrar os carros com base no termo de pesquisa
+const filteredCarros = computed(() => {
+  if (!searchTerm.value) {
+    return carros.value;
+  }
+  const lowerSearchTerm = searchTerm.value.toLowerCase();
+  return carros.value.filter((carro) => {
+    return (
+      carro.id.toString().includes(lowerSearchTerm) ||
+      carro.modelo.id.toString().includes(lowerSearchTerm) ||
+      (carro.modelo.nome_modelo &&
+        carro.modelo.nome_modelo.toLowerCase().includes(lowerSearchTerm)) ||
+      carro.cor.toLowerCase().includes(lowerSearchTerm) ||
+      (carro.descricao_carro &&
+        carro.descricao_carro.toLowerCase().includes(lowerSearchTerm)) ||
+      carro.ano_fabricacao.toString().includes(lowerSearchTerm)
+    );
+  });
 });
 
 const verDetalhes = (carroId) => {
@@ -157,8 +176,6 @@ const verDetalhes = (carroId) => {
 const handleAddCar = () => {
   router.push({ name: "Add Veiculo" });
 };
-
-// Falta Codificar a lógico do search input, para pesquisar na lista de carros
 
 // Função para formatação de data
 const formatDate = (isoDate) => {
