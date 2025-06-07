@@ -263,7 +263,7 @@ onMounted(fetchCars);
           padding: 8px 16px;
           color: $color-dark-text;
           font-family: $font-primary;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 600;
           border-bottom: 1px dashed $color-border-table;
           text-transform: uppercase;
