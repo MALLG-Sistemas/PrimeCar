@@ -2,7 +2,7 @@
   <header class="navbar">
     <div class="navbar-left">
       <!-- Futuramente aqui será codificado parte que recebe o nome do usuário logado -->
-      <h1 class="welcome">Bem-vindo, Mauricio!</h1>
+      <h1 class="title-welcome">Bem-vindo, Mauricio!</h1>
       <p class="subtitle">
         Gerencie marcas, modelos, frota, locações e usuários cadastrados.
       </p>
@@ -42,18 +42,17 @@
   align-items: center;
   justify-content: space-between;
   height: 79px;
-  padding: 15px 20px 0px 20px;
-
-  /* Falar com o grupo referente ao box-shadow */
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  padding: 15px 20px 5px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 25%);
 
   .navbar-left {
     display: flex;
     flex-direction: column;
     justify-content: center;
 
-    .welcome {
+    .title-welcome {
       margin: 0;
+      font-family: $font-primary;
       font-size: 2rem; // 32px
       font-weight: 600;
       color: $color-text-secondary;

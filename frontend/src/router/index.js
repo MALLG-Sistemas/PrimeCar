@@ -7,6 +7,7 @@ const routes = [
     path: "/",
     component: MainLayout,
     children: [
+      // Rotas para Veículos:
       {
         path: "",
         name: "home",
@@ -25,11 +26,19 @@ const routes = [
         component: () => import("../views/EditVeiculo.vue"),
         meta: { title: "Editar Veiculo" },
       },
+
+      // Rotas para Modelos:
       {
-        path: "/modelos",
+        path: "models",
         name: "Modelos",
-        component: () => import("../views/ModelsView.vue"),
+        component: () => import("../views/ModelsListView.vue"),
         meta: { title: "Modelos" },
+      },
+      {
+        path: "models/add",
+        name: "Add Modelo",
+        component: () => import("../views/AddModelView.vue"),
+        meta: { title: "Add Modelo" },
       },
 
       // Rota 404 - Page Not Found:

@@ -14,6 +14,14 @@ class ModeloSerializer(serializers.ModelSerializer):
         model = Modelo
         fields = ["id", "nome_marca", "nome_modelo", "descricao_modelo", "ano_modelo"]
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.id:
+            rep["id"] = (
+                f"CAR{instance.id:03d}"  # Formata o ID como CAR001, CAR002, etc.
+            )
+        return rep
+
 
 class CarroSerializer(serializers.ModelSerializer):
     """
@@ -59,6 +67,14 @@ class CarroSerializer(serializers.ModelSerializer):
         if obj.imagem_principal and hasattr(obj.imagem_principal, "url"):
             return request.build_absolute_uri(obj.imagem_principal.url)
         return None
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.id:
+            rep["id"] = (
+                f"{instance.id:04d}"  # Formata o ID como 0001, 0002, etc., ou seja renderiza sempre digitos
+            )
+        return rep
 
     def create(self, validated_data):
         return super().create(validated_data)

@@ -51,14 +51,14 @@
           class="sub-nav-link"
           v-show="openMenu === 'modelos'">
           <router-link
-            to="/modelos"
+            to="/models"
             class="nav-link sub-link"
             :class="{ 'router-link-active': route.path === '/modelos' }">
             <span class="nav-text">Dashboard Modelos</span>
           </router-link>
 
           <router-link
-            to="/modelos/add"
+            to="/models/add"
             class="nav-link sub-link"
             :class="{ 'router-link-active': route.path === '/modelos/add' }">
             <span class="nav-text">Cadastro de Modelos</span>
