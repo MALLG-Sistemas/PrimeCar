@@ -132,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
@@ -146,6 +146,33 @@ const route = useRoute();
 const toggleMenu = (menu) => {
   openMenu.value = openMenu.value === menu ? "" : menu;
 };
+
+// Verificar a rota atual e abrir o menu apropriado
+const setInitialMenuState = () => {
+  // Se estiver na raiz ou em páginas relacionadas a carros, abra o menu de carros
+  if (
+    route.path === "/" ||
+    route.path.startsWith("/add") ||
+    route.path.startsWith("/edit")
+  ) {
+    openMenu.value = "carros";
+  }
+  // Se estiver em páginas de modelos, abra o menu de modelos
+  else if (route.path.startsWith("/models") || route.path === "/modelos") {
+    openMenu.value = "modelos";
+  }
+};
+
+// Executar ao montar o componente
+onMounted(() => {
+  setInitialMenuState();
+});
+
+// Observar mudanças na rota para atualizar o estado do menu
+watch(
+  () => route.path,
+  () => setInitialMenuState()
+);
 </script>
 
 <style lang="scss" scoped>
