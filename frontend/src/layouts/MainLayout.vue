@@ -1,9 +1,10 @@
 <template>
   <div class="dashboard-layout">
-    <!-- Sidebar -->
+    <!-- Sidebar: Menu lateral de naveção -->
     <aside class="sidebar">
-      <!-- Logo -->
+      <!-- Container com a Logo do sistema "PrimeCar" -->
       <div class="logo-container">
+        <!-- Logo PrimeCar -->
         <img
           src="/images/logo-primecar.jpg"
           alt="Logo PrimeCar"
@@ -12,7 +13,10 @@
 
       <!-- Navegação da Sidebar -->
       <nav class="sidebar-nav">
-        <!-- Link "Dashboard" (Home Page) -->
+        <!-- 
+          Link "Dashboard" (Home Page)
+          Usando router-link com slot customizado para maior controle sobre o elemento renderizado
+        -->
         <router-link
           to="/"
           custom
@@ -26,7 +30,10 @@
           </div>
         </router-link>
 
-        <!-- Link "Modelos" -->
+        <!-- 
+          Link "Modelos" - Menu expansível
+          Controla a abertura/fechamento do submenu correspondente  
+        -->
         <router-link
           to="/modelos"
           custom>
@@ -46,7 +53,9 @@
           </div>
         </router-link>
 
-        <!-- Submenu Modelos -->
+        <!-- 
+          Submenu Modelos - Aparece apenas quando o menu 'modelos' está aberto
+        -->
         <div
           class="sub-nav-link"
           v-show="openMenu === 'modelos'">
@@ -65,7 +74,10 @@
           </router-link>
         </div>
 
-        <!-- Menu Carros -->
+        <!-- 
+          Menu Carros - Outro menu expansível
+          Similar ao menu "Modelos" em estrutura
+        -->
         <router-link
           to="/"
           custom>
@@ -85,7 +97,10 @@
           </div>
         </router-link>
 
-        <!-- Submenu Carros -->
+        <!-- 
+          Submenu Carros - Opções específicas para gestão de veículos
+          Visível apenas quando o menu 'carros' está aberto
+        -->
         <div
           class="sub-nav-link"
           v-show="openMenu === 'carros'">
@@ -113,7 +128,10 @@
         </div>
       </nav>
 
-      <!-- Footer da Sidebar -->
+      <!-- 
+        Footer da Sidebar - Informações de copyright e logo secundário
+        Posicionado na parte inferior usando margin-top: auto
+      -->
       <div class="sidebar-footer">
         <p class="footer-text">PrimeCar - Copyright © 2025</p>
         <img
@@ -123,9 +141,13 @@
       </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
+    <!-- 
+      Conteúdo Principal - Área onde o conteúdo da página será renderizado
+      Formado pelo Header fixo e a view de rota dinâmica
+    -->
     <main class="main-content">
       <HeaderComponent />
+      <!-- Router-view renderiza o componente correspondente à rota atual -->
       <router-view />
     </main>
   </div>
