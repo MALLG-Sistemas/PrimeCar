@@ -182,17 +182,19 @@ watch(
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 /* Siderbar Styles */
 .sidebar {
   width: 248px;
+  min-width: 248px;
   background-color: $color-bg-sidebar;
   padding-top: 20px;
   color: $color-light-text;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-nav {
