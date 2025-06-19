@@ -25,7 +25,12 @@ class Modelo(models.Model):
 def get_upload_path_imagem_carro(instance, filename):
     # O arquivo será enviado para MEDIA_ROOT/imagens_carros/<id_do_carro>/<filename>
     # Garante que o carro tenha um ID antes de tentar usá-lo no caminho
-    carro_id_path = instance.id if instance.id else "temp_carro_id"
+    if hasattr(instance, "carro"):
+        # Se for uma imagem adicional, usa o ID do carro associado
+        carro_id_path = instance.carro.id if instance.carro.id else "temp_carro_id"
+    else:
+        # Se for a imagem principal, usa o ID do próprio carro
+        carro_id_path = instance.id if instance.id else "temp_carro_id"
     return os.path.join("imagens_carros", str(carro_id_path), filename)
 
 
@@ -47,7 +52,7 @@ class Carro(models.Model):
         blank=True, null=True, verbose_name="Descrição do Carro/Modelo"
     )
 
-    # Campo para armazenar a imagem do carro
+    # Campo para armazenar a imagem principal do carro
     imagem_principal = models.ImageField(
         upload_to=get_upload_path_imagem_carro,
         verbose_name="Imagem Principal do Veículo",
@@ -63,3 +68,42 @@ class Carro(models.Model):
     def __str__(self):
         modelo_str = str(self.modelo) if self.modelo else "Modelo Desconhecido"
         return f"{self.modelo} - {self.cor} - ({self.ano_fabricacao})"
+
+
+# Modelo para imagens de carros (principal e adicionais)
+class ImagemCarro(models.Model):
+    """
+    Modelo para armazenar imagens de veículos.
+    Cada veículo pode ter várias imagens, com uma delas marcada como principal.
+    """
+
+    carro = models.ForeignKey(
+        Carro, on_delete=models.CASCADE, related_name="imagens", verbose_name="Veículo"
+    )
+    imagem = models.ImageField(
+        upload_to=get_upload_path_imagem_carro, verbose_name="Imagem do Veículo"
+    )
+    e_principal = models.BooleanField(default=False, verbose_name="É imagem principal")
+    ordem = models.PositiveSmallIntegerField(
+        default=0, verbose_name="Ordem de Exibição"
+    )
+    data_upload = models.DateTimeField(auto_now_add=True, verbose_name="Data de Upload")
+
+    class Meta:
+        verbose_name = "Imagem do Veículo"
+        verbose_name_plural = "Imagens dos Veículos"
+        ordering = ["-e_principal", "ordem", "data_upload"]
+        unique_together = [
+            ["carro", "e_principal"]
+        ]  # Garante apenas uma imagem principal por carro
+
+    def __str__(self):
+        return f"{'Principal' if self.e_principal else 'Adicional'} - {self.carro}"
+
+    def save(self, *args, **kwargs):
+        # Se esta imagem está sendo marcada como principal, desmarca todas as outras
+        if self.e_principal:
+            ImagemCarro.objects.filter(carro=self.carro, e_principal=True).update(
+                e_principal=False
+            )
+        super().save(*args, **kwargs)

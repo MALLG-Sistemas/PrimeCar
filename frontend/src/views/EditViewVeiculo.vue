@@ -18,6 +18,16 @@
       @close="showDeleteDialog = false" />
 
     <!-- 
+      Dialog de confirmação para exclusão de imagem
+    -->
+    <DialogAlert
+      :isVisible="showDeleteImageDialog"
+      message="Tem certeza que deseja excluir esta imagem?"
+      @confirm="confirmDeleteImage"
+      @cancel="showDeleteImageDialog = false"
+      @close="showDeleteImageDialog = false" />
+
+    <!-- 
       Container principal com título dinâmico baseado na forma de acesso 
     -->
     <div class="section-edit__container">
@@ -207,16 +217,37 @@
           :class="{ reduced: editMode }">
           <!-- Imagem principal do veículo -->
           <img
-            :src="car.imagem_principal_url || '/images/no-image.jpg'"
+            :src="imagemPrincipalUrl || '/images/no-image.jpg'"
             alt="Imagem do veículo"
             class="vehicle-card__image" />
 
-          <!-- Espaços para miniaturas (implementação futura) -->
+          <!-- Container para miniaturas, incluindo imagens adicionais -->
           <div class="vehicle-card__thumbs">
+            <!-- Miniatura da imagem principal (sempre a primeira) -->
             <div
-              v-for="(thumb, index) in 4"
-              :key="index"
-              class="vehicle-card__thumb" />
+              class="vehicle-card__thumb active"
+              @click="setActiveImage(getImagemPrincipal())">
+              <img
+                :src="imagemPrincipalUrl || '/images/no-image.jpg'"
+                alt="Miniatura principal" />
+            </div>
+
+            <!-- Miniaturas das imagens adicionais -->
+            <div
+              v-for="imagem in imagensAdicionais"
+              :key="imagem.id"
+              class="vehicle-card__thumb"
+              @click="setActiveImage(imagem)">
+              <img
+                :src="imagem.url_imagem || '/images/no-image.jpg'"
+                alt="Miniatura adicional" />
+            </div>
+
+            <!-- Espaços em branco para completar a grade de miniaturas (até 4 no total) -->
+            <div
+              v-for="index in emptyThumbnailsCount"
+              :key="`empty-${index}`"
+              class="vehicle-card__thumb empty"></div>
           </div>
 
           <!-- Título e informações do veículo -->
@@ -258,13 +289,25 @@
             -->
             <div class="main-image-container">
               <img
-                :src="
-                  previewImage ||
-                  car.imagem_principal_url ||
-                  '/images/no-image.jpg'
-                "
-                alt="Imagem principal do veículo"
+                :src="selectedImage.url || '/images/no-image.jpg'"
+                alt="Imagem do veículo"
                 class="main-image" />
+              <div class="main-image-actions">
+                <div
+                  v-if="!selectedImage.isPlaceholder"
+                  class="image-action-button delete-button"
+                  @click="prepareDeleteImage(selectedImage)">
+                  <span class="material-symbols-outlined">delete</span>
+                </div>
+                <div
+                  v-if="
+                    !selectedImage.isPrincipal && !selectedImage.isPlaceholder
+                  "
+                  class="image-action-button set-primary-button"
+                  @click="setImageAsPrimary(selectedImage)">
+                  <span class="material-symbols-outlined">star</span>
+                </div>
+              </div>
               <div
                 class="edit-image-overlay"
                 @click="$refs.fileInput.click()">
@@ -274,30 +317,34 @@
             </div>
 
             <!-- 
-              Miniaturas de imagens - Uma ativa (a principal) e espaços para futuras imagens
-              que podem ser adicionadas clicando nos ícones "+" 
+              Miniaturas de imagens - Incluindo a principal e adicionais
             -->
             <div class="thumbnail-container">
               <!-- Miniatura principal -->
-              <div class="thumbnail active">
+              <div
+                class="thumbnail"
+                :class="{ active: selectedImage.isPrincipal }"
+                @click="selectImage(getImagemPrincipal())">
                 <img
-                  :src="
-                    previewImage ||
-                    car.imagem_principal_url ||
-                    '/images/no-image.jpg'
-                  "
+                  :src="imagemPrincipalUrl || '/images/no-image.jpg'"
                   alt="Miniatura principal" />
-                <div
-                  class="thumbnail-edit-icon"
-                  @click="$refs.fileInput.click()">
-                  <span class="material-symbols-outlined">edit</span>
-                </div>
+                <div class="thumbnail-badge principal">Principal</div>
               </div>
 
-              <!-- Espaços para futuras imagens adicionais -->
+              <!-- Miniaturas das imagens adicionais -->
               <div
-                v-for="index in 3"
-                :key="index"
+                v-for="imagem in imagensAdicionais"
+                :key="imagem.id"
+                class="thumbnail"
+                :class="{ active: selectedImage.id === imagem.id }"
+                @click="selectImage(imagem)">
+                <img
+                  :src="imagem.url_imagem || '/images/no-image.jpg'"
+                  alt="Miniatura adicional" />
+              </div>
+
+              <!-- Espaço para adicionar nova imagem -->
+              <div
                 class="thumbnail empty"
                 @click="$refs.fileInput.click()">
                 <span class="material-symbols-outlined add-icon"
@@ -366,6 +413,7 @@
             <!-- 
               Input de arquivo oculto - Acionado pelos botões de edição de imagem
               Quando uma imagem é selecionada, o handleImageChange é disparado 
+              Modificado para aceitar múltiplas imagens
             -->
             <input
               ref="fileInput"
@@ -373,7 +421,8 @@
               type="file"
               @change="handleImageChange"
               class="hidden-input"
-              accept="image/*" />
+              accept="image/*"
+              multiple />
 
             <!-- Botões de ação do formulário -->
             <div class="form-buttons">
@@ -409,7 +458,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from "vue";
+import { ref, computed, onMounted, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "../services/api";
 import ButtonComponent from "../components/ButtonComponent.vue";
@@ -423,6 +472,10 @@ const router = useRouter();
 const car = ref({}); // Dados do veículo atual
 const cars = ref([]); // Lista completa de veículos para o select
 
+// Estados para gerenciamento de imagens
+const selectedImage = ref({ isPlaceholder: true, url: null }); // Imagem atualmente selecionada
+const imagemPrincipalUrl = ref(null); // URL da imagem principal (para compatibilidade)
+
 // Estados de UI
 const isLoading = ref(true); // Controla a exibição do loader
 const errorMessage = ref(""); // Armazena mensagens de erro para exibição
@@ -430,9 +483,11 @@ const editMode = ref(false); // Controla se o formulário de edição está vis�
 const searchTerm = ref(""); // Texto digitado no campo de pesquisa
 const selectedCarId = ref(""); // ID do veículo selecionado no dropdown
 const showDeleteDialog = ref(false); // Controla a visibilidade do diálogo de confirmação
+const showDeleteImageDialog = ref(false); // Controla a visibilidade do diálogo de exclusão de imagem
 const fileInput = ref(null); // Referência ao input de arquivo (imagens)
 const previewImage = ref(null); // URL de prévia da imagem selecionada
 const showSearchResults = ref(false); // Controla a visibilidade do dropdown de resultados
+const imageToDelete = ref(null); // Armazena a referência da imagem a ser excluída
 
 // Objeto reativo para armazenar os dados do veículo em edição
 // Usado para isolar as alterações antes de salvar
@@ -445,7 +500,7 @@ const editedCar = reactive({
 });
 
 // Estados relacionados ao upload de imagem e salvamento
-const newImage = ref(null); // Arquivo de imagem selecionado para upload
+const newImages = ref([]); // Arquivos de imagem selecionados para upload
 const isSaving = ref(false); // Controla o estado de salvamento (feedback visual)
 
 // Computed properties
@@ -455,6 +510,27 @@ const isSaving = ref(false); // Controla o estado de salvamento (feedback visual
  * através do menu ou via botão de visualização
  */
 const isDirectAccess = computed(() => !route.params.id);
+
+/**
+ * Obtém as imagens adicionais (excluindo a principal) do veículo atual
+ */
+const imagensAdicionais = computed(() => {
+  if (!car.value?.imagens || !Array.isArray(car.value.imagens)) {
+    return [];
+  }
+
+  // Filtra para incluir apenas imagens que não são principais
+  return car.value.imagens.filter((img) => !img.e_principal);
+});
+
+/**
+ * Calcula quantos espaços em branco são necessários para preencher a grade de miniaturas
+ * Limitado a 4 miniaturas no total (1 principal + adicionais + espaços vazios)
+ */
+const emptyThumbnailsCount = computed(() => {
+  const totalImages = 1 + imagensAdicionais.value.length; // Principal + adicionais
+  return Math.max(0, 4 - totalImages); // Completa até 4 espaços no máximo
+});
 
 /**
  * Filtra a lista de carros com base no termo de pesquisa
@@ -477,6 +553,130 @@ const filteredCars = computed(() => {
     );
   });
 });
+
+/**
+ * Obtém a imagem principal do veículo atual
+ */
+function getImagemPrincipal() {
+  // Primeiro verifica nas imagens do novo modelo
+  if (car.value.imagens && Array.isArray(car.value.imagens)) {
+    const imagemPrincipal = car.value.imagens.find((img) => img.e_principal);
+    if (imagemPrincipal) {
+      return {
+        ...imagemPrincipal,
+        isPrincipal: true,
+        url: imagemPrincipal.url_imagem,
+      };
+    }
+  }
+
+  // Caso não encontre, usa o campo imagem_principal_url tradicional
+  return {
+    isPrincipal: true,
+    url: car.value.imagem_principal_url,
+    id: "principal",
+  };
+}
+
+/**
+ * Seleciona uma imagem para exibição principal no editor
+ */
+function selectImage(image) {
+  selectedImage.value = {
+    ...image,
+    url: image.url || image.url_imagem, // Use url_imagem se url não estiver disponível
+  };
+}
+
+/**
+ * Define a imagem ativa no card de visualização
+ * Atualiza a imagem principal exibida no card
+ */
+function setActiveImage(image) {
+  // No modo de visualização, apenas atualiza a imagem principal exibida
+  if (!editMode.value) {
+    imagemPrincipalUrl.value = image.url || image.url_imagem;
+  }
+}
+
+/**
+ * Prepara a exclusão de uma imagem
+ * Armazena a referência da imagem e exibe o diálogo de confirmação
+ */
+function prepareDeleteImage(image) {
+  // Não permite excluir a única imagem principal se não houver outras
+  if (image.isPrincipal && imagensAdicionais.value.length === 0) {
+    alert("Não é possível excluir a única imagem do veículo.");
+    return;
+  }
+
+  imageToDelete.value = image;
+  showDeleteImageDialog.value = true;
+}
+
+/**
+ * Confirma a exclusão da imagem selecionada
+ */
+async function confirmDeleteImage() {
+  if (!imageToDelete.value || !car.value.id) return;
+
+  try {
+    // Exclui a imagem através da API
+    await apiClient.deleteImagem(
+      car.value.id.replace(/^0+/, ""), // Remove zeros à esquerda
+      imageToDelete.value.id
+    );
+
+    // Se a imagem excluída era a principal, precisamos atualizar
+    if (imageToDelete.value.isPrincipal && imagensAdicionais.value.length > 0) {
+      // Define automaticamente a primeira imagem adicional como principal
+      await apiClient.setImagemPrincipal(
+        car.value.id.replace(/^0+/, ""),
+        imagensAdicionais.value[0].id
+      );
+    }
+
+    // Recarrega os detalhes do veículo para atualizar as imagens
+    await fetchCarDetails(car.value.id);
+
+    // Limpa o estado e mostra mensagem de sucesso
+    imageToDelete.value = null;
+    selectedImage.value = getImagemPrincipal();
+
+    alert("Imagem excluída com sucesso!");
+  } catch (error) {
+    alert(`Erro ao excluir a imagem: ${error.message}`);
+    console.error("Erro ao excluir imagem:", error);
+  } finally {
+    showDeleteImageDialog.value = false;
+  }
+}
+
+/**
+ * Define uma imagem como principal
+ */
+async function setImageAsPrimary(image) {
+  if (!image || !car.value.id) return;
+
+  try {
+    // Chama a API para definir a imagem como principal
+    await apiClient.setImagemPrincipal(
+      car.value.id.replace(/^0+/, ""),
+      image.id
+    );
+
+    // Recarrega os detalhes do veículo
+    await fetchCarDetails(car.value.id);
+
+    // Atualiza a seleção para a nova imagem principal
+    selectedImage.value = getImagemPrincipal();
+
+    alert("Imagem principal atualizada com sucesso!");
+  } catch (error) {
+    alert(`Erro ao definir imagem principal: ${error.message}`);
+    console.error("Erro ao definir imagem principal:", error);
+  }
+}
 
 /**
  * Trata o evento blur do campo de pesquisa
@@ -530,6 +730,21 @@ const fetchCarDetails = async (id) => {
     const response = await apiClient.getCarro(cleanId);
     car.value = response.data;
 
+    // Define a URL da imagem principal para o card de visualização
+    if (car.value.imagens && Array.isArray(car.value.imagens)) {
+      const imagemPrincipal = car.value.imagens.find((img) => img.e_principal);
+      if (imagemPrincipal) {
+        imagemPrincipalUrl.value = imagemPrincipal.url_imagem;
+      } else {
+        imagemPrincipalUrl.value = car.value.imagem_principal_url;
+      }
+    } else {
+      imagemPrincipalUrl.value = car.value.imagem_principal_url;
+    }
+
+    // Inicializa a imagem selecionada como a principal
+    selectedImage.value = getImagemPrincipal();
+
     // Inicializa os dados para edição com os valores atuais
     editedCar.ano_fabricacao = car.value.ano_fabricacao || 0;
     editedCar.cor = car.value.cor || "";
@@ -559,7 +774,7 @@ const fetchCarDetails = async (id) => {
       editedCar.modelo_id = null;
     }
 
-    // Limpa o preview da imagem
+    // Limpa a prévia de imagem
     previewImage.value = null;
   } catch (error) {
     // Tratamento de diferentes tipos de erro para feedback informativo
@@ -649,26 +864,37 @@ const backToSelection = async () => {
 };
 
 /**
- * Manipulador para lidar com a seleção de uma nova imagem
- * Cria uma prévia da imagem selecionada e armazena o arquivo para upload
+ * Manipulador para lidar com a seleção de novas imagens
+ * Cria prévia das imagens selecionadas e armazena os arquivos para upload
  */
 const handleImageChange = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    newImage.value = file; // Armazena o arquivo para envio posteriormente
+  const files = event.target.files;
 
-    // Criar uma prévia da imagem usando FileReader
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      previewImage.value = e.target.result; // URL base64 da imagem para prévia
-    };
-    reader.readAsDataURL(file);
+  if (files && files.length > 0) {
+    // Armazena os arquivos para envio posteriormente
+    newImages.value = Array.from(files);
+
+    // Cria uma prévia da primeira imagem selecionada
+    if (files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.value = e.target.result;
+
+        // Atualiza a prévia da imagem selecionada
+        selectedImage.value = {
+          isNew: true,
+          url: e.target.result,
+          file: files[0],
+        };
+      };
+      reader.readAsDataURL(files[0]);
+    }
   }
 };
 
 /**
  * Salva as alterações feitas no formulário
- * Envia dados para a API incluindo a nova imagem se houver
+ * Envia dados para a API incluindo as novas imagens se houver
  */
 const saveChanges = async () => {
   try {
@@ -695,9 +921,12 @@ const saveChanges = async () => {
       }
     }
 
-    // Adiciona a nova imagem ao FormData se houver
-    if (newImage.value) {
-      formData.append("imagem_principal", newImage.value);
+    // Adiciona as novas imagens ao FormData
+    if (newImages.value.length > 0) {
+      // Adiciona cada imagem ao campo imagens_para_upload
+      newImages.value.forEach((file) => {
+        formData.append("imagens_para_upload", file);
+      });
     }
 
     // Enviar para API
@@ -717,6 +946,7 @@ const saveChanges = async () => {
     console.error("Erro ao atualizar:", error);
   } finally {
     isSaving.value = false; // Desativa indicador de salvamento
+    newImages.value = []; // Limpa as imagens selecionadas
   }
 };
 
@@ -734,9 +964,12 @@ const cancelEdit = () => {
     ? `${car.value.modelo.nome_marca} ${car.value.modelo.nome_modelo}`
     : "";
 
-  // Limpa a seleção de imagem e sua prévia
-  newImage.value = null;
+  // Limpa a seleção de imagens e sua prévia
+  newImages.value = [];
   previewImage.value = null;
+
+  // Restaura a seleção para a imagem principal
+  selectedImage.value = getImagemPrincipal();
 
   // Sai do modo de edição
   editMode.value = false;
@@ -752,6 +985,14 @@ const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("pt-BR");
 };
+
+// Observador para quando o modo de edição é ativado
+watch(editMode, (newValue) => {
+  if (newValue) {
+    // Ao entrar no modo de edição, seleciona a imagem principal para exibição
+    selectedImage.value = getImagemPrincipal();
+  }
+});
 
 // Hook de ciclo de vida - executado quando o componente é montado
 onMounted(async () => {
@@ -795,10 +1036,10 @@ onMounted(async () => {
   }
 
   &__title {
-    font-family: $font-primary; // Variável de fonte definida no arquivo de variáveis
+    font-family: $font-primary;
     font-size: 29px;
     font-weight: 500;
-    color: $color-text-secondary; // Variável de cor definida no arquivo de variáveis
+    color: $color-text-secondary;
   }
 
   // Estilos para o modo de acesso direto
@@ -939,6 +1180,46 @@ onMounted(async () => {
         object-fit: cover; // Mantém a proporção da imagem
       }
 
+      // Ações para a imagem principal (botões de excluir e definir como principal)
+      .main-image-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 5;
+
+        .image-action-button {
+          width: 36px;
+          height: 36px;
+          background-color: rgba(0, 0, 0, 0.6);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+          }
+
+          &.delete-button:hover {
+            background-color: rgba(255, 0, 0, 0.8);
+          }
+
+          &.set-primary-button:hover {
+            background-color: rgba(255, 215, 0, 0.8);
+          }
+
+          .material-symbols-outlined {
+            font-size: 18px;
+          }
+        }
+      }
+
       // Overlay que aparece ao passar o mouse para editar a imagem
       .edit-image-overlay {
         position: absolute;
@@ -974,6 +1255,7 @@ onMounted(async () => {
     // Container das miniaturas
     .thumbnail-container {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
 
       // Item individual de miniatura
@@ -984,6 +1266,23 @@ onMounted(async () => {
         border-radius: 4px;
         overflow: hidden;
         cursor: pointer;
+
+        // Badge para indicar imagem principal
+        .thumbnail-badge {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          padding: 2px 0;
+          background-color: rgba(0, 0, 0, 0.6);
+          color: white;
+          font-size: 9px;
+          text-align: center;
+
+          &.principal {
+            background-color: rgba(61, 94, 115, 0.8); // Cor primária
+          }
+        }
 
         // Destaque para a miniatura ativa
         &.active {
@@ -1076,21 +1375,41 @@ onMounted(async () => {
     &__thumbs {
       display: flex;
       gap: 10px;
+      margin-top: 10px;
     }
 
-    // Miniatura individual (placeholder)
+    // Miniatura individual (estilos melhorados)
     &__thumb {
       width: 60px;
       height: 60px;
       border-radius: 4px;
-      background-color: #f0f0f0;
-      // Padrão xadrez para indicar fundo transparente
-      background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
-        linear-gradient(-45deg, #ccc 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #ccc 75%),
-        linear-gradient(-45deg, transparent 75%, #ccc 75%);
-      background-size: 12px 12px;
-      background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+
+      // Miniatura ativa
+      &.active {
+        border: 2px solid $color-button-primary;
+      }
+
+      // Miniatura vazia
+      &.empty {
+        background-color: #f0f0f0;
+        // Padrão xadrez para indicar fundo transparente
+        background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+          linear-gradient(-45deg, #ccc 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #ccc 75%),
+          linear-gradient(-45deg, transparent 75%, #ccc 75%);
+        background-size: 12px 12px;
+        background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+      }
+
+      // Imagem dentro da miniatura
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
 
     &__title {
@@ -1100,6 +1419,7 @@ onMounted(async () => {
       text-align: start;
       line-height: 150%;
       color: $color-text-secondary;
+      margin-top: 15px;
     }
 
     &__divider {
