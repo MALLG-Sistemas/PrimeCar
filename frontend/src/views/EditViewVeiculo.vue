@@ -395,7 +395,7 @@ const selectCarFromSearch = (id) => {
 
   // Atualiza a URL para incluir o ID selecionado
   router.push({
-    name: "Editar Veiculo",
+    name: "Visualizar e Editar Veiculo",
     params: { id },
   });
 
@@ -491,7 +491,7 @@ const handleCarSelect = () => {
   if (selectedCarId.value) {
     // Atualiza a URL para incluir o ID selecionado
     router.push({
-      name: "Editar Veiculo",
+      name: "Visualizar e Editar Veiculo",
       params: { id: selectedCarId.value },
     });
 
