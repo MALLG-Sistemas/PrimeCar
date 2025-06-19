@@ -158,7 +158,7 @@
           v-if="editMode"
           class="vehicle-edit-card">
           <h2 class="vehicle-edit-card__title">Editar Veículo</h2>
-          <hr class="vehicle-edit-card__divider" />
+          <hr class="vehicle-edit-card__divider__edit" />
 
           <!-- Seção de imagens do veículo -->
           <div class="vehicle-images">
@@ -675,7 +675,9 @@ onMounted(async () => {
 
   // Seção de imagens do veículo
   .vehicle-images {
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
     .main-image-container {
       position: relative;
@@ -683,7 +685,6 @@ onMounted(async () => {
       height: 240px;
       border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 10px;
 
       .main-image {
         width: 100%;
@@ -844,6 +845,9 @@ onMounted(async () => {
 
   // Card de edição
   .vehicle-edit-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     width: 60%;
     padding: 20px;
     border-radius: 8px;
@@ -852,15 +856,21 @@ onMounted(async () => {
 
     &__title {
       text-align: center;
+      font-family: $font-primary;
       font-size: 29px;
-      margin-top: 0;
+      font-weight: 500;
       color: $color-text-secondary;
+      line-height: 121.168%;
     }
 
     &__divider {
-      margin: 10px 0 20px;
       border: 0;
       border-top: 1px solid $color-border-table;
+    }
+
+    &__divider__edit {
+      border: 0;
+      border-top: 1px solid $color-light-bg;
     }
   }
 
