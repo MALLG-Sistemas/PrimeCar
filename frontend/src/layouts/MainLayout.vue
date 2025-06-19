@@ -23,7 +23,7 @@
           v-slot="{ navigate, isActive }">
           <div
             class="nav-link"
-            :class="{ 'router-link-active': isActive }"
+            :class="{ 'router-link-active': isActive && route.path === '/' }"
             @click="navigate">
             <span class="nav-link-icon material-symbols-outlined">cottage</span>
             <span class="nav-text">Dashboard</span>
@@ -122,7 +122,7 @@
           <router-link
             to="/edit"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': route.path === '/edit' }">
+            :class="{ 'router-link-active': isEditRoute }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
           </router-link>
         </div>
@@ -154,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
@@ -170,6 +170,14 @@ const openMenu = ref("");
  * @type {import('vue-router').RouteLocationNormalizedLoaded}
  */
 const route = useRoute();
+
+/**
+ * Verifica se a rota atual está relacionada à edição/visualização de veículo
+ * Isso inclui tanto /edit quanto /edit/[id]
+ */
+const isEditRoute = computed(() => {
+  return route.path === "/edit" || route.path.startsWith("/edit/");
+});
 
 /**
  * Alterna a abertura/fechamento de um menu específico
