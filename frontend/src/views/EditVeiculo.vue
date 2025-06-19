@@ -13,7 +13,7 @@
       <header class="section-edit__header">
         <h1 class="section-edit__title">
           {{
-            isDirectAccess ? "Selecionar Veículo" : "Editar/Visualizar Veículo"
+            isDirectAccess ? "Selecionar Veículo" : "Visualizar/Editar Veículo"
           }}
         </h1>
       </header>
@@ -301,7 +301,7 @@
                 fontSize="14px"
                 type="submit"
                 :disabled="isSaving">
-                {{ isSaving ? "Salvando..." : "Salvar Alterações" }}
+                {{ isSaving ? "Salvando..." : "Salvar" }}
               </ButtonComponent>
 
               <ButtonComponent
@@ -741,7 +741,7 @@ onMounted(async () => {
   }
 
   &__content {
-    padding: 0 22px;
+    margin: 0 55px 68px 55px;
   }
 
   .loading,
@@ -877,7 +877,13 @@ onMounted(async () => {
   }
 
   .vehicle-card {
-    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 428px;
+    height: 100%;
+    min-height: 737px;
     margin: 0 auto;
     padding: 20px;
     border-radius: 8px;
@@ -886,13 +892,13 @@ onMounted(async () => {
     transition: width 0.3s ease;
 
     &.reduced {
-      width: 38%; // Quando em modo de edição, card de visualização fica com 38%
-      margin: 0;
+      max-width: 100%;
+      width: 38%; // Quando a edição do veiculo, card de visualização fica com 38%
     }
 
     &__image {
       width: 100%;
-      max-height: 400px;
+      max-height: 235px;
       object-fit: cover;
       border-radius: 8px;
     }
@@ -900,31 +906,45 @@ onMounted(async () => {
     &__thumbs {
       display: flex;
       gap: 10px;
-      margin-top: 10px;
     }
 
     &__thumb {
       width: 60px;
       height: 60px;
       border-radius: 4px;
-      background-color: #e0e0e0;
+      background-color: #f0f0f0;
+      background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
     }
 
     &__title {
-      font-size: 24px;
-      margin-top: 20px;
+      font-family: $font-secondary;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: start;
+      line-height: 150%;
       color: $color-text-secondary;
     }
 
     &__divider {
-      margin: 10px 0;
       border: 0;
-      border-top: 1px solid $color-border-table;
+      border-top: 1px solid $color-light-bg;
     }
 
     &__info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
       p {
-        margin: 10px 0;
+        font-family: $font-secondary;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 150%;
         color: $color-text-secondary;
       }
     }
