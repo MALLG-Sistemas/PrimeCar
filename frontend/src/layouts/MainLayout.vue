@@ -120,7 +120,7 @@
           </router-link>
 
           <router-link
-            to="/edit"
+            :to="currentEditingVehicleRoute"
             class="nav-link sub-link"
             :class="{ 'router-link-active': isEditRoute }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
@@ -155,7 +155,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
 /**
@@ -177,6 +177,36 @@ const route = useRoute();
  */
 const isEditRoute = computed(() => {
   return route.path === "/edit" || route.path.startsWith("/edit/");
+});
+
+/**
+ * Determina a rota para a opção "Visualizar/Editar Veículo" na sidebar.
+ * Se já estiver em uma página de edição com um ID, mantém esse ID.
+ * Caso contrário, usa o último ID acessado armazenado no localStorage.
+ * Se nenhum ID estiver disponível, direciona para a rota básica /edit sem parâmetros.
+ *
+ * @returns {Object|string} - Um objeto de rota com nome e parâmetros ou uma string de caminho
+ */
+const currentEditingVehicleRoute = computed(() => {
+  // Verifica se estamos em uma rota de edição com um ID
+  if (route.name === "Visualizar e Editar Veiculo" && route.params.id) {
+    return {
+      name: "Visualizar e Editar Veiculo",
+      params: { id: route.params.id },
+    };
+  }
+
+  // Verifica se existe um ID salvo no localStorage
+  const savedVehicleId = localStorage.getItem("lastViewedVehicleId");
+  if (savedVehicleId) {
+    return {
+      name: "Visualizar e Editar Veiculo",
+      params: { id: savedVehicleId },
+    };
+  }
+
+  // Caso não haja ID salvo ou atual, retorna a rota básica
+  return "/edit";
 });
 
 /**
@@ -224,6 +254,21 @@ onMounted(() => {
 watch(
   () => route.path,
   () => setInitialMenuState()
+);
+
+/**
+ * Observa mudanças nos parâmetros da rota para atualizar o ID do veículo no localStorage
+ * quando o usuário visita uma página específica de edição de veículo
+ */
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId && route.name === "Visualizar e Editar Veiculo") {
+      // Salva o ID do veículo atual no localStorage para persistência
+      localStorage.setItem("lastViewedVehicleId", newId);
+    }
+  },
+  { immediate: true } // Executa imediatamente para capturar o valor inicial
 );
 </script>
 
