@@ -33,13 +33,35 @@
             Voltar
           </ButtonComponent>
 
-          <div class="section-edit__search">
-            <span class="material-symbols-outlined">search</span>
-            <input
-              v-model="searchTerm"
-              type="text"
-              placeholder="Pesquisar veículos..."
-              class="section-edit__search-input" />
+          <div class="section-edit__search-wrapper">
+            <div class="section-edit__search">
+              <span class="material-symbols-outlined">search</span>
+              <input
+                v-model="searchTerm"
+                type="text"
+                placeholder="Pesquisar veículos..."
+                @focus="showSearchResults = true"
+                @blur="handleSearchBlur"
+                class="section-edit__search-input" />
+            </div>
+
+            <div
+              v-if="showSearchResults && searchTerm.trim()"
+              class="section-edit__search-results">
+              <div
+                v-if="filteredCars.length === 0"
+                class="section-edit__search-no-results">
+                Nenhum veículo encontrado
+              </div>
+              <div
+                v-for="carOption in filteredCars"
+                :key="carOption.id"
+                class="section-edit__search-option"
+                @mousedown="selectCarFromSearch(carOption.id)">
+                {{ carOption.modelo?.nome_marca }}
+                {{ carOption.modelo?.nome_modelo }} ({{ carOption.cor }})
+              </div>
+            </div>
           </div>
 
           <select
@@ -319,6 +341,7 @@ const selectedCarId = ref("");
 const showDeleteDialog = ref(false); // Controla a visibilidade do diálogo de confirmação
 const fileInput = ref(null);
 const previewImage = ref(null);
+const showSearchResults = ref(false); // Controla a visibilidade do dropdown de resultados
 
 // Objeto reativo para armazenar os dados do veículo em edição
 const editedCar = reactive({
@@ -351,6 +374,33 @@ const filteredCars = computed(() => {
     );
   });
 });
+
+/**
+ * Trata o evento blur do campo de pesquisa
+ * Usa setTimeout para permitir o clique nas opções antes de fechar o dropdown
+ */
+const handleSearchBlur = () => {
+  setTimeout(() => {
+    showSearchResults.value = false;
+  }, 200);
+};
+
+/**
+ * Seleciona um carro a partir dos resultados da pesquisa
+ * @param {string} id - ID do veículo selecionado
+ */
+const selectCarFromSearch = (id) => {
+  selectedCarId.value = id;
+
+  // Atualiza a URL para incluir o ID selecionado
+  router.push({
+    name: "Editar Veiculo",
+    params: { id },
+  });
+
+  // Busca os detalhes do veículo selecionado
+  fetchCarDetails(id);
+};
 
 /**
  * Busca os detalhes de um veículo pelo ID
@@ -616,6 +666,11 @@ onMounted(async () => {
     width: 100%;
   }
 
+  &__search-wrapper {
+    position: relative;
+    flex: 1;
+  }
+
   &__search {
     display: flex;
     align-items: center;
@@ -634,6 +689,38 @@ onMounted(async () => {
       background-color: transparent;
       font-size: 14px;
     }
+  }
+
+  &__search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid $color-border-table;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+
+  &__search-option {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: $color-text-secondary;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  &__search-no-results {
+    padding: 10px 16px;
+    color: $color-text-tertiary;
+    font-style: italic;
   }
 
   &__select {
