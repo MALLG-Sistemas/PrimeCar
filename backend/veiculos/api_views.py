@@ -153,27 +153,31 @@ class CarroViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            imagem = get_object_or_404(ImagemCarro, id=imagem_id, carro=carro)
+            # Busca a imagem que será definida como principal
+            nova_imagem_principal = get_object_or_404(
+                ImagemCarro, id=imagem_id, carro=carro
+            )
 
-            # Desmarca todas as outras imagens como não principais
+            # Importante: primeiro remova o status de principal das outras imagens,
+            # Não exlue
             ImagemCarro.objects.filter(carro=carro, e_principal=True).update(
                 e_principal=False
             )
 
-            # Define esta imagem como principal
-            imagem.e_principal = True
-            imagem.save()
+            # Define a nova imagem como principal
+            nova_imagem_principal.e_principal = True
+            nova_imagem_principal.save()
 
             # Atualiza o campo imagem_principal do carro para manter compatibilidade
-            carro.imagem_principal = imagem.imagem
+            carro.imagem_principal = nova_imagem_principal.imagem
             carro.save(update_fields=["imagem_principal"])
 
             return Response(
                 {
                     "detail": "Imagem principal definida com sucesso.",
                     "imagem_principal_url": (
-                        request.build_absolute_uri(imagem.imagem.url)
-                        if imagem.imagem
+                        request.build_absolute_uri(nova_imagem_principal.imagem.url)
+                        if nova_imagem_principal.imagem
                         else None
                     ),
                 }
