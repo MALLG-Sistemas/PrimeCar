@@ -160,29 +160,97 @@
           <h2 class="vehicle-edit-card__title">Editar Veículo</h2>
           <hr class="vehicle-edit-card__divider" />
 
+          <!-- Seção de imagens do veículo -->
+          <div class="vehicle-images">
+            <!-- Imagem Principal -->
+            <div class="main-image-container">
+              <img
+                :src="
+                  previewImage ||
+                  car.imagem_principal_url ||
+                  '/images/no-image.jpg'
+                "
+                alt="Imagem principal do veículo"
+                class="main-image" />
+              <div
+                class="edit-image-overlay"
+                @click="$refs.fileInput.click()">
+                <span class="material-symbols-outlined">edit</span>
+                <span class="edit-text">Editar imagem</span>
+              </div>
+            </div>
+
+            <!-- Miniaturas de imagens -->
+            <div class="thumbnail-container">
+              <!-- Miniatura principal -->
+              <div class="thumbnail active">
+                <img
+                  :src="
+                    previewImage ||
+                    car.imagem_principal_url ||
+                    '/images/no-image.jpg'
+                  "
+                  alt="Miniatura principal" />
+                <div
+                  class="thumbnail-edit-icon"
+                  @click="$refs.fileInput.click()">
+                  <span class="material-symbols-outlined">edit</span>
+                </div>
+              </div>
+
+              <!-- Espaços para futuras imagens -->
+              <div
+                v-for="index in 3"
+                :key="index"
+                class="thumbnail empty">
+                <span class="material-symbols-outlined add-icon"
+                  >add_photo_alternate</span
+                >
+              </div>
+            </div>
+          </div>
+
           <form
             @submit.prevent="saveChanges"
             class="vehicle-edit-form">
+            <!-- Campo de Modelo (apenas visualização) -->
             <div class="form-group">
-              <label for="car-year">Ano de Fabricação:</label>
+              <label for="car-model">Modelo:</label>
               <input
-                id="car-year"
-                type="number"
-                v-model.number="editedCar.ano_fabricacao"
-                class="form-control"
-                required />
-            </div>
-
-            <div class="form-group">
-              <label for="car-color">Cor:</label>
-              <input
-                id="car-color"
+                id="car-model"
                 type="text"
-                v-model="editedCar.cor"
+                v-model="editedCar.modelo_nome"
                 class="form-control"
-                required />
+                disabled
+                title="Modelo não pode ser alterado diretamente" />
             </div>
 
+            <!-- Campos de Ano e Cor lado a lado -->
+            <div class="form-group form-row">
+              <!-- Ano de Fabricação -->
+              <div class="form-col">
+                <label for="car-year">Ano de Fabricação:</label>
+                <input
+                  id="car-year"
+                  type="number"
+                  v-model.number="editedCar.ano_fabricacao"
+                  class="form-control"
+                  required />
+              </div>
+
+              <!-- Cor -->
+              <div class="form-col">
+                <label for="car-color">Cor:</label>
+                <input
+                  id="car-color"
+                  type="text"
+                  v-model="editedCar.cor"
+                  class="form-control"
+                  required />
+              </div>
+            </div>
+
+            <!-- Campo de Descrição -->
             <div class="form-group">
               <label for="car-desc">Descrição:</label>
               <textarea
@@ -192,21 +260,16 @@
                 rows="5"></textarea>
             </div>
 
-            <div class="form-group">
-              <label for="car-image">Imagem Principal:</label>
-              <div class="image-upload-container">
-                <input
-                  id="car-image"
-                  type="file"
-                  @change="handleImageChange"
-                  class="form-control"
-                  accept="image/*" />
-                <p class="image-help-text">
-                  Selecione uma nova imagem para substituir a atual
-                </p>
-              </div>
-            </div>
+            <!-- Input de arquivo oculto (acionado pelos botões de edição) -->
+            <input
+              ref="fileInput"
+              id="car-image"
+              type="file"
+              @change="handleImageChange"
+              class="hidden-input"
+              accept="image/*" />
 
+            <!-- Botões de ação do formulário -->
             <div class="form-buttons">
               <ButtonComponent
                 class="save-button"
@@ -214,8 +277,9 @@
                 bgColor="#3D5E73"
                 textColor="#FFFFFF"
                 fontSize="14px"
-                type="submit">
-                Salvar Alterações
+                type="submit"
+                :disabled="isSaving">
+                {{ isSaving ? "Salvando..." : "Salvar Alterações" }}
               </ButtonComponent>
 
               <ButtonComponent
@@ -253,12 +317,18 @@ const editMode = ref(false);
 const searchTerm = ref("");
 const selectedCarId = ref("");
 const showDeleteDialog = ref(false); // Controla a visibilidade do diálogo de confirmação
+const fileInput = ref(null);
+const previewImage = ref(null);
+
+// Objeto reativo para armazenar os dados do veículo em edição
 const editedCar = reactive({
   ano_fabricacao: 0,
   cor: "",
   descricao_carro: "",
   modelo_id: null,
+  modelo_nome: "", // Adicionado para exibir o nome do modelo no campo de visualização
 });
+
 const newImage = ref(null);
 const isSaving = ref(false);
 
@@ -282,7 +352,10 @@ const filteredCars = computed(() => {
   });
 });
 
-// Buscar dados do carro pelo ID na URL ou pelo ID selecionado
+/**
+ * Busca os detalhes de um veículo pelo ID
+ * @param {string} id - ID do veículo a ser buscado
+ */
 const fetchCarDetails = async (id) => {
   if (!id) {
     if (isDirectAccess.value) {
@@ -307,6 +380,11 @@ const fetchCarDetails = async (id) => {
     editedCar.cor = car.value.cor || "";
     editedCar.descricao_carro = car.value.descricao_carro || "";
 
+    // Adiciona o nome do modelo completo para exibição
+    editedCar.modelo_nome = car.value.modelo
+      ? `${car.value.modelo.nome_marca} ${car.value.modelo.nome_modelo}`
+      : "";
+
     // Obtém o ID do modelo, convertendo de "CAR001" para 1 se necessário
     if (car.value.modelo?.id) {
       if (
@@ -323,6 +401,9 @@ const fetchCarDetails = async (id) => {
     } else {
       editedCar.modelo_id = null;
     }
+
+    // Limpa o preview da imagem
+    previewImage.value = null;
   } catch (error) {
     if (error.response) {
       errorMessage.value = `Erro ${error.response.status}: ${
@@ -338,7 +419,9 @@ const fetchCarDetails = async (id) => {
   }
 };
 
-// Buscar lista de todos os carros para o select
+/**
+ * Busca todos os veículos disponíveis para o select
+ */
 const fetchAllCars = async () => {
   try {
     const response = await apiClient.getCarros();
@@ -350,10 +433,12 @@ const fetchAllCars = async () => {
   }
 };
 
-// Manipulador para quando um carro é selecionado no dropdown
+/**
+ * Manipulador para quando um veículo é selecionado no dropdown
+ */
 const handleCarSelect = () => {
   if (selectedCarId.value) {
-    // Atualiza a URL para incluir o ID selecionado (opcional)
+    // Atualiza a URL para incluir o ID selecionado
     router.push({
       name: "Editar Veiculo",
       params: { id: selectedCarId.value },
@@ -364,7 +449,9 @@ const handleCarSelect = () => {
   }
 };
 
-// Função para excluir o veículo (após confirmação no DialogAlert)
+/**
+ * Exclui o veículo atual após confirmação
+ */
 const confirmDelete = async () => {
   try {
     const carId = route.params.id || selectedCarId.value;
@@ -378,15 +465,26 @@ const confirmDelete = async () => {
   }
 };
 
-// Manipulador para lidar com a seleção de imagem
+/**
+ * Manipulador para lidar com a seleção de uma nova imagem
+ */
 const handleImageChange = (event) => {
   const file = event.target.files[0];
   if (file) {
     newImage.value = file;
+
+    // Criar uma prévia da imagem
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImage.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 };
 
-// Função para salvar as alterações
+/**
+ * Salva as alterações feitas no formulário
+ */
 const saveChanges = async () => {
   try {
     isSaving.value = true;
@@ -438,22 +536,32 @@ const saveChanges = async () => {
   }
 };
 
-// Função para cancelar a edição
+/**
+ * Cancela a edição e restaura valores originais
+ */
 const cancelEdit = () => {
   // Restaura os valores originais
   editedCar.ano_fabricacao = car.value.ano_fabricacao || 0;
   editedCar.cor = car.value.cor || "";
   editedCar.descricao_carro = car.value.descricao_carro || "";
   editedCar.modelo_id = car.value.modelo?.id || null;
+  editedCar.modelo_nome = car.value.modelo
+    ? `${car.value.modelo.nome_marca} ${car.value.modelo.nome_modelo}`
+    : "";
 
   // Limpa a seleção de imagem
   newImage.value = null;
+  previewImage.value = null;
 
   // Sai do modo de edição
   editMode.value = false;
 };
 
-// Formata data para o padrão brasileiro
+/**
+ * Formata uma data para o padrão brasileiro (DD/MM/AAAA)
+ * @param {string} dateStr - String de data no formato ISO
+ * @returns {string} Data formatada
+ */
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -472,10 +580,6 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style lang="scss" scoped>
-/* Estilos existentes mantidos */
-</style>
 
 <style lang="scss" scoped>
 @use "../styles/variables" as *;
@@ -569,6 +673,111 @@ onMounted(async () => {
     color: $color-text-tertiary;
   }
 
+  // Seção de imagens do veículo
+  .vehicle-images {
+    margin-bottom: 25px;
+
+    .main-image-container {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+
+      .main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .edit-image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        .material-symbols-outlined {
+          font-size: 32px;
+          margin-bottom: 10px;
+        }
+
+        .edit-text {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .thumbnail-container {
+      display: flex;
+      gap: 10px;
+
+      .thumbnail {
+        position: relative;
+        width: 80px;
+        height: 60px;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+
+        &.active {
+          border: 2px solid $color-button-primary;
+        }
+
+        &.empty {
+          background-color: #e0e0e0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .add-icon {
+            color: #878787;
+            font-size: 24px;
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .thumbnail-edit-icon {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: rgba(0, 0, 0, 0.5);
+          color: white;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+
   // Layout para modo de edição
   .vehicle-content {
     display: flex;
@@ -639,10 +848,11 @@ onMounted(async () => {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: white;
+    background-color: $color-bg-page-edit-view;
 
     &__title {
-      font-size: 24px;
+      text-align: center;
+      font-size: 29px;
       margin-top: 0;
       color: $color-text-secondary;
     }
@@ -658,6 +868,16 @@ onMounted(async () => {
   .vehicle-edit-form {
     .form-group {
       margin-bottom: 20px;
+
+      // Layout para campos lado a lado
+      &.form-row {
+        display: flex;
+        gap: 20px;
+
+        .form-col {
+          flex: 1;
+        }
+      }
 
       label {
         display: block;
@@ -677,19 +897,18 @@ onMounted(async () => {
           outline: none;
           border-color: $color-button-primary;
         }
+
+        // Estilos específicos para campos desabilitados
+        &:disabled {
+          background-color: #f5f5f5;
+          color: #666;
+          cursor: not-allowed;
+        }
       }
 
       .form-textarea {
         resize: vertical;
         min-height: 100px;
-      }
-
-      .image-upload-container {
-        .image-help-text {
-          margin-top: 5px;
-          font-size: 12px;
-          color: $color-text-tertiary;
-        }
       }
     }
 
@@ -698,6 +917,36 @@ onMounted(async () => {
       justify-content: flex-end;
       gap: 15px;
       margin-top: 30px;
+    }
+  }
+
+  // Input de arquivo oculto
+  .hidden-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+}
+
+// Responsividade para telas menores
+@media (max-width: 768px) {
+  .section-edit {
+    .vehicle-content {
+      flex-direction: column;
+
+      .vehicle-card.reduced {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .vehicle-edit-card {
+        width: 100%;
+      }
     }
   }
 }
