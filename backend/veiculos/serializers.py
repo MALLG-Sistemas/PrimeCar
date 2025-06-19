@@ -85,8 +85,8 @@ class CarroSerializer(serializers.ModelSerializer):
             "ano_fabricacao",
             "cor",
             "descricao_carro",
-            "imagem_principal",  # Mantido por compatibilidade com frontend
-            "imagem_principal_url",  # Mantido por compatibilidade com frontend
+            "imagem_principal",
+            "imagem_principal_url",
             "imagens",
             "imagens_para_upload",
             "data_cadastro",
@@ -141,8 +141,14 @@ class CarroSerializer(serializers.ModelSerializer):
         # Processa imagens adicionais
         if imagens_data:
             for i, imagem in enumerate(imagens_data):
-                # A primeira imagem será a principal se não houver imagem principal
-                e_principal = i == 0 and not imagem_principal
+                # A primeira imagem será a principal apenas se não houver imagem principal
+                e_principal = (
+                    i == 0
+                    and not imagem_principal
+                    and not ImagemCarro.objects.filter(
+                        carro=carro, e_principal=True
+                    ).exists()
+                )
 
                 ImagemCarro.objects.create(
                     carro=carro, imagem=imagem, e_principal=e_principal, ordem=i + 1
@@ -188,12 +194,26 @@ class CarroSerializer(serializers.ModelSerializer):
                 or 0
             )
 
-            # Adiciona as novas imagens como não principais
+            # Verifica se já existe uma imagem principal antes de processar novas
+            tem_imagem_principal = carro.imagens.filter(e_principal=True).exists()
+
+            # Adiciona as novas imagens
             for i, imagem in enumerate(imagens_data):
+                # Se não houver imagem principal e esta for a primeira, marca como principal
+                e_principal = (
+                    i == 0 and not tem_imagem_principal and not imagem_principal
+                )
+
+                # Se esta imagem for marcada como principal, desmarca outras que possam estar assim
+                if e_principal:
+                    ImagemCarro.objects.filter(carro=carro, e_principal=True).update(
+                        e_principal=False
+                    )
+
                 ImagemCarro.objects.create(
                     carro=carro,
                     imagem=imagem,
-                    e_principal=False,
+                    e_principal=e_principal,
                     ordem=ultima_ordem + i + 1,
                 )
 

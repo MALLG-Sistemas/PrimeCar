@@ -72,11 +72,6 @@ class Carro(models.Model):
 
 # Modelo para imagens de carros (principal e adicionais)
 class ImagemCarro(models.Model):
-    """
-    Modelo para armazenar imagens de veículos.
-    Cada veículo pode ter várias imagens, com uma delas marcada como principal.
-    """
-
     carro = models.ForeignKey(
         Carro, on_delete=models.CASCADE, related_name="imagens", verbose_name="Veículo"
     )
@@ -93,17 +88,12 @@ class ImagemCarro(models.Model):
         verbose_name = "Imagem do Veículo"
         verbose_name_plural = "Imagens dos Veículos"
         ordering = ["-e_principal", "ordem", "data_upload"]
-        unique_together = [
-            ["carro", "e_principal"]
-        ]  # Garante apenas uma imagem principal por carro
+        # Removida a unique_together para permitir múltiplas imagens marcadas como principal,
+        # já que a lógica de exibição determina qual será usada na lista de veículos.
 
     def __str__(self):
         return f"{'Principal' if self.e_principal else 'Adicional'} - {self.carro}"
 
     def save(self, *args, **kwargs):
-        # Se esta imagem está sendo marcada como principal, desmarca todas as outras
-        if self.e_principal:
-            ImagemCarro.objects.filter(carro=self.carro, e_principal=True).update(
-                e_principal=False
-            )
+        # Não desmarca outras imagens ao marcar como principal, pois não há restrição para apenas uma.
         super().save(*args, **kwargs)

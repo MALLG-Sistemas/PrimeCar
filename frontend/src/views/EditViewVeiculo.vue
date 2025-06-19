@@ -558,8 +558,8 @@ const filteredCars = computed(() => {
  * Obtém a imagem principal do veículo atual
  */
 function getImagemPrincipal() {
-  // Primeiro verifica nas imagens do novo modelo
   if (car.value.imagens && Array.isArray(car.value.imagens)) {
+    // Seleciona a primeira imagem com e_principal=True de acordo com a ordenação
     const imagemPrincipal = car.value.imagens.find((img) => img.e_principal);
     if (imagemPrincipal) {
       return {
@@ -569,8 +569,6 @@ function getImagemPrincipal() {
       };
     }
   }
-
-  // Caso não encontre, usa o campo imagem_principal_url tradicional
   return {
     isPrincipal: true,
     url: car.value.imagem_principal_url,
@@ -900,7 +898,7 @@ const saveChanges = async () => {
   try {
     isSaving.value = true; // Ativa indicador de salvamento
 
-    // Cria um FormData para envio multipart/form-data (necessário para upload de arquivos)
+    // Cria um FormData para envio multipart/form-data
     const formData = new FormData();
     formData.append("ano_fabricacao", editedCar.ano_fabricacao);
     formData.append("cor", editedCar.cor);
@@ -908,22 +906,20 @@ const saveChanges = async () => {
 
     // Trata o modelo_id, garantindo formato correto para a API
     if (editedCar.modelo_id) {
-      // Se o ID do modelo estiver no formato "CARxxx", extrai apenas o número
-      if (
-        typeof editedCar.modelo_id === "string" &&
-        editedCar.modelo_id.startsWith("CAR")
-      ) {
-        const numericId = parseInt(editedCar.modelo_id.replace("CAR", ""), 10);
-        formData.append("modelo_id", numericId);
-      } else {
-        // Caso contrário, usa o valor como está
-        formData.append("modelo_id", editedCar.modelo_id);
-      }
+      formData.append("modelo_id", editedCar.modelo_id);
+    }
+
+    // Verifica se o veículo já tem uma imagem principal
+    const hasPrincipalImage =
+      car.value.imagens && car.value.imagens.some((img) => img.e_principal);
+
+    // SOLUÇÃO: Adiciona um campo explícito para indicar que novas imagens não devem ser principais
+    if (hasPrincipalImage && newImages.value.length > 0) {
+      formData.append("manter_imagem_principal_existente", "true");
     }
 
     // Adiciona as novas imagens ao FormData
     if (newImages.value.length > 0) {
-      // Adiciona cada imagem ao campo imagens_para_upload
       newImages.value.forEach((file) => {
         formData.append("imagens_para_upload", file);
       });
@@ -931,22 +927,21 @@ const saveChanges = async () => {
 
     // Enviar para API
     const carId = route.params.id || selectedCarId.value;
-    // Remove os zeros à esquerda do ID se necessário
     const cleanCarId = carId.replace(/^0+/, "");
     await apiClient.updateCarro(cleanCarId, formData);
 
-    // Recarrega os detalhes atualizados do veículo
+    // Recarrega os detalhes do veículo
     await fetchCarDetails(carId);
-
-    // Sai do modo de edição após salvar com sucesso
     editMode.value = false;
+
     alert("Veículo atualizado com sucesso!");
+    newImages.value = [];
+    previewImage.value = null;
   } catch (error) {
     alert(`Erro ao atualizar veículo: ${error.message}`);
     console.error("Erro ao atualizar:", error);
   } finally {
-    isSaving.value = false; // Desativa indicador de salvamento
-    newImages.value = []; // Limpa as imagens selecionadas
+    isSaving.value = false;
   }
 };
 
