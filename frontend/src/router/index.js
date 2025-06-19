@@ -21,7 +21,7 @@ const routes = [
         meta: { title: "Add Veiculo" },
       },
       {
-        path: "edit/:id",
+        path: "edit/:id?",
         name: "Editar Veiculo",
         component: () => import("../views/EditVeiculo.vue"),
         meta: { title: "Editar/Visualizar Veiculo" },

@@ -21,6 +21,10 @@ export default {
   getCarro(id) {
     return apiClient.get(`carros/${id}/`);
   },
+  // Método para excluir um carro pelo ID
+  deleteCarro(id) {
+    return apiClient.delete(`carros/${id}/`);
+  },
 
   // Adicionar outros metodos conforme necessário
 };

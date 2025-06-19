@@ -1,46 +1,110 @@
 <template>
   <section class="section-edit">
+    <!-- Interface diferente baseada na forma de acesso -->
     <div class="section-edit__container">
       <header class="section-edit__header">
-        <h1 class="section-edit__title">Editar/Visualizar Veículo</h1>
+        <h1 class="section-edit__title">
+          {{
+            isDirectAccess ? "Selecionar Veículo" : "Editar/Visualizar Veículo"
+          }}
+        </h1>
       </header>
 
-      <div class="section-edit__actions">
-        <!-- Verificar -->
+      <!-- Interface de acesso direto pelo menu -->
+      <div
+        v-if="isDirectAccess"
+        class="section-edit__direct-access">
+        <div class="section-edit__search-container">
+          <ButtonComponent
+            class="section-edit__button"
+            size="small"
+            bgColor="#3D5E73"
+            textColor="#FFFFFF"
+            fontSize="14px"
+            @click="$router.push('/')">
+            Voltar
+          </ButtonComponent>
+
+          <div class="section-edit__search">
+            <span class="material-symbols-outlined">search</span>
+            <input
+              v-model="searchTerm"
+              type="text"
+              placeholder="Pesquisar veículos..."
+              class="section-edit__search-input" />
+          </div>
+
+          <select
+            v-model="selectedCarId"
+            class="section-edit__select"
+            @change="handleCarSelect">
+            <option
+              disabled
+              value="">
+              Selecione um veículo
+            </option>
+            <option
+              v-for="carOption in filteredCars"
+              :key="carOption.id"
+              :value="carOption.id">
+              {{ carOption.modelo?.nome_marca }}
+              {{ carOption.modelo?.nome_modelo }} ({{ carOption.cor }})
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Botões de ação para acesso pelo botão Visualizar -->
+      <div
+        v-else
+        class="section-edit__actions">
         <ButtonComponent
           class="section-edit__button"
           size="large"
           bgColor="#3D5E73"
           textColor="#FFFFFF"
           fontSize="11px"
-          @click="$router.push('')">
-          Editar Veículo
+          @click="editMode = !editMode">
+          {{ editMode ? "Cancelar" : "Editar Veículo" }}
         </ButtonComponent>
-        <!-- Verificar -->
+
         <ButtonComponent
           class="section-delete__button"
           size="large"
           bgColor="#f00"
           textColor="#FFFFFF"
           fontSize="11px"
-          @click="$router.push('/veiculos')">
+          @click="deleteCar">
           Excluir Veículo
         </ButtonComponent>
       </div>
     </div>
 
+    <!-- Estado de carregamento -->
     <div
       class="section-edit__content"
       v-if="isLoading">
       <p class="loading">Carregando detalhes do veículo...</p>
     </div>
 
+    <!-- Estado de erro -->
     <div
       class="section-edit__content"
       v-else-if="errorMessage">
       <p class="error-message">{{ errorMessage }}</p>
     </div>
 
+    <!-- Estado de seleção vazia (para acesso direto) -->
+    <div
+      class="section-edit__content"
+      v-else-if="isDirectAccess && !selectedCarId">
+      <p class="instruction-message">
+        Utilize a pesquisa ou selecione um veículo na lista acima para
+        visualizar seus detalhes.
+      </p>
+    </div>
+
+    <!-- Detalhes do veículo -->
     <div
       class="section-edit__content"
       v-else>
@@ -79,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "../services/api";
 import ButtonComponent from "../components/ButtonComponent.vue";
@@ -87,13 +151,41 @@ import ButtonComponent from "../components/ButtonComponent.vue";
 const route = useRoute();
 const router = useRouter();
 const car = ref({});
+const cars = ref([]); // Lista para o select
 const isLoading = ref(true);
 const errorMessage = ref("");
+const editMode = ref(false);
+const searchTerm = ref("");
+const selectedCarId = ref("");
 
-// Buscar dados do carro pelo ID na URL
-const fetchCarDetails = async () => {
-  const id = route.params.id;
+// Verifica se o acesso foi direto pelo menu ou via botão Visualizar
+const isDirectAccess = computed(() => !route.params.id);
+
+// Lista filtrada de carros para o select
+const filteredCars = computed(() => {
+  const term = searchTerm.value.trim().toLowerCase();
+  if (!term) return cars.value;
+
+  return cars.value.filter((carItem) => {
+    const marcaModelo =
+      `${carItem.modelo?.nome_marca} ${carItem.modelo?.nome_modelo}`.toLowerCase();
+    const cor = (carItem.cor || "").toLowerCase();
+    const ano = carItem.ano_fabricacao?.toString() || "";
+
+    return (
+      marcaModelo.includes(term) || cor.includes(term) || ano.includes(term)
+    );
+  });
+});
+
+// Buscar dados do carro pelo ID na URL ou pelo ID selecionado
+const fetchCarDetails = async (id) => {
   if (!id) {
+    if (isDirectAccess.value) {
+      isLoading.value = false;
+      return;
+    }
+
     errorMessage.value = "ID do veículo não especificado";
     isLoading.value = false;
     return;
@@ -118,6 +210,32 @@ const fetchCarDetails = async () => {
   }
 };
 
+// Buscar lista de todos os carros para o select
+const fetchAllCars = async () => {
+  try {
+    const response = await apiClient.getCarros();
+    cars.value = Array.isArray(response.data.results)
+      ? response.data.results
+      : [];
+  } catch (error) {
+    console.error("Erro ao buscar lista de veículos:", error);
+  }
+};
+
+// Manipulador para quando um carro é selecionado no dropdown
+const handleCarSelect = () => {
+  if (selectedCarId.value) {
+    // Atualiza a URL para incluir o ID selecionado (opcional)
+    router.push({
+      name: "Editar Veiculo",
+      params: { id: selectedCarId.value },
+    });
+
+    // Busca os detalhes do veículo selecionado
+    fetchCarDetails(selectedCarId.value);
+  }
+};
+
 // Função para excluir o veículo
 const deleteCar = async () => {
   if (!confirm("Tem certeza que deseja excluir este veículo?")) {
@@ -125,7 +243,7 @@ const deleteCar = async () => {
   }
 
   try {
-    await apiClient.deleteCarro(route.params.id);
+    await apiClient.deleteCarro(route.params.id || selectedCarId.value);
     alert("Veículo excluído com sucesso!");
     router.push("/");
   } catch (error) {
@@ -141,7 +259,16 @@ const formatDate = (dateStr) => {
 };
 
 // Carregar dados ao montar o componente
-onMounted(fetchCarDetails);
+onMounted(async () => {
+  if (isDirectAccess.value) {
+    // Se for acesso direto pelo menu, busca todos os carros para o select
+    await fetchAllCars();
+    isLoading.value = false;
+  } else {
+    // Se for acesso via botão Visualizar, busca apenas o carro específico
+    fetchCarDetails(route.params.id);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -167,6 +294,49 @@ onMounted(fetchCarDetails);
     color: $color-text-secondary;
   }
 
+  &__direct-access {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  &__search-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    padding: 10px 16px;
+    gap: 8px;
+    border: 1px solid $color-border-table;
+    border-radius: 6px;
+    color: $color-text-tertiary;
+    background-color: white;
+
+    &-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      background-color: transparent;
+      font-size: 14px;
+    }
+  }
+
+  &__select {
+    min-width: 250px;
+    padding: 10px;
+    border: 1px solid $color-border-table;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 14px;
+    color: $color-text-secondary;
+    cursor: pointer;
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -178,7 +348,8 @@ onMounted(fetchCarDetails);
   }
 
   .loading,
-  .error-message {
+  .error-message,
+  .instruction-message {
     text-align: center;
     padding: 20px;
     font-size: 18px;
@@ -186,6 +357,10 @@ onMounted(fetchCarDetails);
 
   .error-message {
     color: red;
+  }
+
+  .instruction-message {
+    color: $color-text-tertiary;
   }
 
   .vehicle-card {
