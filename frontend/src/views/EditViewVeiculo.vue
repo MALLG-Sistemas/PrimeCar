@@ -224,7 +224,8 @@
               <div
                 v-for="index in 3"
                 :key="index"
-                class="thumbnail empty">
+                class="thumbnail empty"
+                @click="$refs.fileInput.click()">
                 <span class="material-symbols-outlined add-icon"
                   >add_photo_alternate</span
                 >
