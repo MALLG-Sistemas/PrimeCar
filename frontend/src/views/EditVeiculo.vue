@@ -1,5 +1,13 @@
 <template>
   <section class="section-edit">
+    <!-- Dialog de confirmação para exclusão -->
+    <DialogAlert
+      :isVisible="showDeleteDialog"
+      message="Tem certeza que deseja excluir este veículo?"
+      @confirm="confirmDelete"
+      @cancel="showDeleteDialog = false"
+      @close="showDeleteDialog = false" />
+
     <!-- Interface diferente baseada na forma de acesso -->
     <div class="section-edit__container">
       <header class="section-edit__header">
@@ -74,7 +82,7 @@
           bgColor="#f00"
           textColor="#FFFFFF"
           fontSize="11px"
-          @click="deleteCar">
+          @click="showDeleteDialog = true">
           Excluir Veículo
         </ButtonComponent>
       </div>
@@ -233,6 +241,7 @@ import { ref, computed, onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "../services/api";
 import ButtonComponent from "../components/ButtonComponent.vue";
+import DialogAlert from "../components/DialogAlert.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -243,6 +252,7 @@ const errorMessage = ref("");
 const editMode = ref(false);
 const searchTerm = ref("");
 const selectedCarId = ref("");
+const showDeleteDialog = ref(false); // Controla a visibilidade do diálogo de confirmação
 const editedCar = reactive({
   ano_fabricacao: 0,
   cor: "",
@@ -287,14 +297,32 @@ const fetchCarDetails = async (id) => {
 
   try {
     isLoading.value = true;
-    const response = await apiClient.getCarro(id);
+    // Remove os zeros à esquerda do ID se necessário
+    const cleanId = id.replace(/^0+/, "");
+    const response = await apiClient.getCarro(cleanId);
     car.value = response.data;
 
     // Inicializa os dados para edição
     editedCar.ano_fabricacao = car.value.ano_fabricacao || 0;
     editedCar.cor = car.value.cor || "";
     editedCar.descricao_carro = car.value.descricao_carro || "";
-    editedCar.modelo_id = car.value.modelo?.id || null;
+
+    // Obtém o ID do modelo, convertendo de "CAR001" para 1 se necessário
+    if (car.value.modelo?.id) {
+      if (
+        typeof car.value.modelo.id === "string" &&
+        car.value.modelo.id.startsWith("CAR")
+      ) {
+        editedCar.modelo_id = parseInt(
+          car.value.modelo.id.replace("CAR", ""),
+          10
+        );
+      } else {
+        editedCar.modelo_id = car.value.modelo?.id || null;
+      }
+    } else {
+      editedCar.modelo_id = null;
+    }
   } catch (error) {
     if (error.response) {
       errorMessage.value = `Erro ${error.response.status}: ${
@@ -336,12 +364,8 @@ const handleCarSelect = () => {
   }
 };
 
-// Função para excluir o veículo
-const deleteCar = async () => {
-  if (!confirm("Tem certeza que deseja excluir este veículo?")) {
-    return;
-  }
-
+// Função para excluir o veículo (após confirmação no DialogAlert)
+const confirmDelete = async () => {
   try {
     const carId = route.params.id || selectedCarId.value;
     // Remove os zeros à esquerda do ID se necessário
@@ -448,6 +472,10 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style lang="scss" scoped>
+/* Estilos existentes mantidos */
+</style>
 
 <style lang="scss" scoped>
 @use "../styles/variables" as *;
