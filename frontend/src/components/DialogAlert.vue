@@ -17,23 +17,22 @@
 
       <div class="dialog-actions">
         <ButtonComponent
-          class="dialog-button dialog-button--cancel"
-          size="large"
-          bgColor="#878787"
-          textColor="#FFFFFF"
-          fontSize="14px"
-          @click="handleCancel">
-          Cancelar
-        </ButtonComponent>
-
-        <ButtonComponent
           class="dialog-button dialog-button--confirm"
-          size="large"
+          size="medium"
           bgColor="#f00"
           textColor="#FFFFFF"
           fontSize="14px"
           @click="handleConfirm">
           Excluir
+        </ButtonComponent>
+        <ButtonComponent
+          class="dialog-button dialog-button--cancel"
+          size="medium"
+          bgColor="#3d5e73"
+          textColor="#FFFFFF"
+          fontSize="14px"
+          @click="handleCancel">
+          Cancelar
         </ButtonComponent>
       </div>
     </div>
@@ -81,7 +80,6 @@ const handleCancel = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,25 +87,29 @@ const handleCancel = () => {
 }
 
 .dialog-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 400px;
-  padding: 24px;
+  background-color: $color-bg-dialog-alert;
   display: flex;
+  width: 100%;
+  max-width: 292px;
+  height: 100%;
+  max-height: 146px;
+  padding: 10px 20px;
   flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  aspect-ratio: 291.02/146;
+  border-radius: 8px;
 }
 
 .dialog-header {
   display: inline-flex;
-  padding: 10px 20px;
+  justify-content: center;
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
+  border-bottom: 1px solid $color-dark-bg;
+  padding-bottom: 8px;
+  width: 100%;
 
   .dialog-icon {
     color: #f00;
@@ -126,13 +128,13 @@ const handleCancel = () => {
 }
 
 .dialog-content {
-  padding: 5px 20px 15px;
-
   .dialog-message {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
     color: $color-text-secondary;
     text-align: center;
+    line-height: 15px;
   }
 }
 
@@ -142,7 +144,7 @@ const handleCancel = () => {
   justify-content: space-between;
   align-items: center;
   gap: 15px;
-  padding: 0 20px;
+  padding: 0 0;
 
   .dialog-button {
     flex: 1;
