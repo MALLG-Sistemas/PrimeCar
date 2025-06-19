@@ -39,6 +39,8 @@
               <input
                 v-model="searchTerm"
                 type="text"
+                id="car-search"
+                name="car-search"
                 placeholder="Pesquisar veículos..."
                 @focus="showSearchResults = true"
                 @blur="handleSearchBlur"
@@ -66,6 +68,8 @@
 
           <select
             v-model="selectedCarId"
+            id="car-select"
+            name="car-select"
             class="section-edit__select"
             @change="handleCarSelect">
             <option
@@ -106,6 +110,17 @@
           fontSize="11px"
           @click="showDeleteDialog = true">
           Excluir Veículo
+        </ButtonComponent>
+
+        <!-- Botão para voltar para a seleção de veículo -->
+        <ButtonComponent
+          class="section-back__button"
+          size="large"
+          bgColor="#878787"
+          textColor="#FFFFFF"
+          fontSize="11px"
+          @click="backToSelection">
+          Trocar Veículo
         </ButtonComponent>
       </div>
     </div>
@@ -517,6 +532,28 @@ const confirmDelete = async () => {
 };
 
 /**
+ * Volta para a tela de seleção de veículo (modo de acesso direto)
+ * Mantém o mesmo URL, mas altera o estado interno do componente para mostrar
+ * a interface de seleção de veículo
+ */
+const backToSelection = async () => {
+  // Limpa o ID da URL para evitar confusão
+  router.replace({ path: "/edit" });
+
+  // Força o modo de acesso direto
+  // A mudança da rota acima vai causar a remontagem do componente com isDirectAccess = true
+
+  // Carrega os carros para o select e a pesquisa
+  await fetchAllCars();
+
+  // Redefine outros estados se necessário
+  editMode.value = false;
+  errorMessage.value = "";
+  selectedCarId.value = "";
+  searchTerm.value = "";
+};
+
+/**
  * Manipulador para lidar com a seleção de uma nova imagem
  */
 const handleImageChange = (event) => {
@@ -624,6 +661,15 @@ onMounted(async () => {
   if (isDirectAccess.value) {
     // Se for acesso direto pelo menu, busca todos os carros para o select
     await fetchAllCars();
+
+    // Verificar se há um ID salvo e tentar carregar automaticamente
+    const savedVehicleId = localStorage.getItem("lastViewedVehicleId");
+    if (savedVehicleId) {
+      selectedCarId.value = savedVehicleId;
+      // Carrega automaticamente os detalhes do veículo
+      await fetchCarDetails(savedVehicleId);
+    }
+
     isLoading.value = false;
   } else {
     // Se for acesso via botão Visualizar, busca apenas o carro específico
