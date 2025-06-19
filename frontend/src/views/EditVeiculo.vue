@@ -104,38 +104,124 @@
       </p>
     </div>
 
-    <!-- Detalhes do veículo -->
+    <!-- Detalhes do veículo e formulário de edição -->
     <div
       class="section-edit__content"
       v-else>
-      <div class="vehicle-card">
-        <img
-          :src="car.imagem_principal_url || '/images/no-image.jpg'"
-          alt="Imagem do veículo"
-          class="vehicle-card__image" />
+      <div
+        class="vehicle-content"
+        :class="{ 'edit-mode': editMode }">
+        <!-- Card de visualização (reduzido quando em modo de edição) -->
+        <div
+          class="vehicle-card"
+          :class="{ reduced: editMode }">
+          <img
+            :src="car.imagem_principal_url || '/images/no-image.jpg'"
+            alt="Imagem do veículo"
+            class="vehicle-card__image" />
 
-        <div class="vehicle-card__thumbs">
-          <div
-            v-for="(thumb, index) in 4"
-            :key="index"
-            class="vehicle-card__thumb" />
+          <div class="vehicle-card__thumbs">
+            <div
+              v-for="(thumb, index) in 4"
+              :key="index"
+              class="vehicle-card__thumb" />
+          </div>
+
+          <h2 class="vehicle-card__title">
+            {{ car.modelo?.nome_marca }} {{ car.modelo?.nome_modelo }}
+          </h2>
+          <hr class="vehicle-card__divider" />
+
+          <div class="vehicle-card__info">
+            <p><strong>Código:</strong> {{ car.id }}</p>
+            <p><strong>ID Modelo:</strong> {{ car.modelo?.id }}</p>
+            <p><strong>Ano:</strong> {{ car.ano_fabricacao }}</p>
+            <p><strong>Cor:</strong> {{ car.cor }}</p>
+            <p>
+              <strong>Data de Cadastro:</strong>
+              {{ formatDate(car.data_cadastro) }}
+            </p>
+            <p><strong>Descrição:</strong> {{ car.descricao_carro }}</p>
+          </div>
         </div>
 
-        <h2 class="vehicle-card__title">
-          {{ car.modelo?.nome_marca }} {{ car.modelo?.nome_modelo }}
-        </h2>
-        <hr class="vehicle-card__divider" />
+        <!-- Card de edição (exibido apenas quando em modo de edição) -->
+        <div
+          v-if="editMode"
+          class="vehicle-edit-card">
+          <h2 class="vehicle-edit-card__title">Editar Veículo</h2>
+          <hr class="vehicle-edit-card__divider" />
 
-        <div class="vehicle-card__info">
-          <p><strong>Código:</strong> {{ car.id }}</p>
-          <p><strong>ID Modelo:</strong> {{ car.modelo?.id }}</p>
-          <p><strong>Ano:</strong> {{ car.ano_fabricacao }}</p>
-          <p><strong>Cor:</strong> {{ car.cor }}</p>
-          <p>
-            <strong>Data de Cadastro:</strong>
-            {{ formatDate(car.data_cadastro) }}
-          </p>
-          <p><strong>Descrição:</strong> {{ car.descricao_carro }}</p>
+          <form
+            @submit.prevent="saveChanges"
+            class="vehicle-edit-form">
+            <div class="form-group">
+              <label for="car-year">Ano de Fabricação:</label>
+              <input
+                id="car-year"
+                type="number"
+                v-model.number="editedCar.ano_fabricacao"
+                class="form-control"
+                required />
+            </div>
+
+            <div class="form-group">
+              <label for="car-color">Cor:</label>
+              <input
+                id="car-color"
+                type="text"
+                v-model="editedCar.cor"
+                class="form-control"
+                required />
+            </div>
+
+            <div class="form-group">
+              <label for="car-desc">Descrição:</label>
+              <textarea
+                id="car-desc"
+                v-model="editedCar.descricao_carro"
+                class="form-control form-textarea"
+                rows="5"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="car-image">Imagem Principal:</label>
+              <div class="image-upload-container">
+                <input
+                  id="car-image"
+                  type="file"
+                  @change="handleImageChange"
+                  class="form-control"
+                  accept="image/*" />
+                <p class="image-help-text">
+                  Selecione uma nova imagem para substituir a atual
+                </p>
+              </div>
+            </div>
+
+            <div class="form-buttons">
+              <ButtonComponent
+                class="save-button"
+                size="large"
+                bgColor="#3D5E73"
+                textColor="#FFFFFF"
+                fontSize="14px"
+                type="submit">
+                Salvar Alterações
+              </ButtonComponent>
+
+              <ButtonComponent
+                class="cancel-button"
+                size="large"
+                bgColor="#878787"
+                textColor="#FFFFFF"
+                fontSize="14px"
+                type="button"
+                @click="cancelEdit">
+                Cancelar
+              </ButtonComponent>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -143,7 +229,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "../services/api";
 import ButtonComponent from "../components/ButtonComponent.vue";
@@ -157,6 +243,14 @@ const errorMessage = ref("");
 const editMode = ref(false);
 const searchTerm = ref("");
 const selectedCarId = ref("");
+const editedCar = reactive({
+  ano_fabricacao: 0,
+  cor: "",
+  descricao_carro: "",
+  modelo_id: null,
+});
+const newImage = ref(null);
+const isSaving = ref(false);
 
 // Verifica se o acesso foi direto pelo menu ou via botão Visualizar
 const isDirectAccess = computed(() => !route.params.id);
@@ -195,6 +289,12 @@ const fetchCarDetails = async (id) => {
     isLoading.value = true;
     const response = await apiClient.getCarro(id);
     car.value = response.data;
+
+    // Inicializa os dados para edição
+    editedCar.ano_fabricacao = car.value.ano_fabricacao || 0;
+    editedCar.cor = car.value.cor || "";
+    editedCar.descricao_carro = car.value.descricao_carro || "";
+    editedCar.modelo_id = car.value.modelo?.id || null;
   } catch (error) {
     if (error.response) {
       errorMessage.value = `Erro ${error.response.status}: ${
@@ -243,12 +343,90 @@ const deleteCar = async () => {
   }
 
   try {
-    await apiClient.deleteCarro(route.params.id || selectedCarId.value);
+    const carId = route.params.id || selectedCarId.value;
+    // Remove os zeros à esquerda do ID se necessário
+    const cleanCarId = carId.replace(/^0+/, "");
+    await apiClient.deleteCarro(cleanCarId);
     alert("Veículo excluído com sucesso!");
     router.push("/");
   } catch (error) {
     alert(`Erro ao excluir veículo: ${error.message}`);
   }
+};
+
+// Manipulador para lidar com a seleção de imagem
+const handleImageChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    newImage.value = file;
+  }
+};
+
+// Função para salvar as alterações
+const saveChanges = async () => {
+  try {
+    isSaving.value = true;
+
+    // Cria um FormData para envio multipart/form-data (necessário para upload de arquivos)
+    const formData = new FormData();
+    formData.append("ano_fabricacao", editedCar.ano_fabricacao);
+    formData.append("cor", editedCar.cor);
+    formData.append("descricao_carro", editedCar.descricao_carro);
+
+    // Verifica se o modelo_id existe e se está no formato CAR001
+    // Se sim, extrai apenas o número (convertendo de CAR001 para 1)
+    if (editedCar.modelo_id) {
+      // Se o ID do modelo estiver no formato "CARxxx", extraímos o número
+      if (
+        typeof editedCar.modelo_id === "string" &&
+        editedCar.modelo_id.startsWith("CAR")
+      ) {
+        const numericId = parseInt(editedCar.modelo_id.replace("CAR", ""), 10);
+        formData.append("modelo_id", numericId);
+      } else {
+        // Caso contrário, usamos o valor como está
+        formData.append("modelo_id", editedCar.modelo_id);
+      }
+    }
+
+    // Adiciona a nova imagem se houver
+    if (newImage.value) {
+      formData.append("imagem_principal", newImage.value);
+    }
+
+    // Enviar para API
+    const carId = route.params.id || selectedCarId.value;
+    // Remove os zeros à esquerda do ID se necessário (converter 0003 para 3)
+    const cleanCarId = carId.replace(/^0+/, "");
+    await apiClient.updateCarro(cleanCarId, formData);
+
+    // Recarrega os detalhes atualizados
+    await fetchCarDetails(carId);
+
+    // Sai do modo de edição
+    editMode.value = false;
+    alert("Veículo atualizado com sucesso!");
+  } catch (error) {
+    alert(`Erro ao atualizar veículo: ${error.message}`);
+    console.error("Erro ao atualizar:", error);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+// Função para cancelar a edição
+const cancelEdit = () => {
+  // Restaura os valores originais
+  editedCar.ano_fabricacao = car.value.ano_fabricacao || 0;
+  editedCar.cor = car.value.cor || "";
+  editedCar.descricao_carro = car.value.descricao_carro || "";
+  editedCar.modelo_id = car.value.modelo?.id || null;
+
+  // Limpa a seleção de imagem
+  newImage.value = null;
+
+  // Sai do modo de edição
+  editMode.value = false;
 };
 
 // Formata data para o padrão brasileiro
@@ -363,12 +541,29 @@ onMounted(async () => {
     color: $color-text-tertiary;
   }
 
+  // Layout para modo de edição
+  .vehicle-content {
+    display: flex;
+    gap: 20px;
+
+    &.edit-mode {
+      justify-content: space-between;
+    }
+  }
+
   .vehicle-card {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: $color-bg-page-edit-view;
+    transition: width 0.3s ease;
+
+    &.reduced {
+      width: 38%; // Quando em modo de edição, card de visualização fica com 38%
+      margin: 0;
+    }
 
     &__image {
       width: 100%;
@@ -386,8 +581,8 @@ onMounted(async () => {
     &__thumb {
       width: 60px;
       height: 60px;
-      background-color: #e0e0e0;
       border-radius: 4px;
+      background-color: #e0e0e0;
     }
 
     &__title {
@@ -407,6 +602,74 @@ onMounted(async () => {
         margin: 10px 0;
         color: $color-text-secondary;
       }
+    }
+  }
+
+  // Card de edição
+  .vehicle-edit-card {
+    width: 60%;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+
+    &__title {
+      font-size: 24px;
+      margin-top: 0;
+      color: $color-text-secondary;
+    }
+
+    &__divider {
+      margin: 10px 0 20px;
+      border: 0;
+      border-top: 1px solid $color-border-table;
+    }
+  }
+
+  // Formulário de edição
+  .vehicle-edit-form {
+    .form-group {
+      margin-bottom: 20px;
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: $color-text-secondary;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid $color-border-table;
+        border-radius: 6px;
+        font-size: 14px;
+
+        &:focus {
+          outline: none;
+          border-color: $color-button-primary;
+        }
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .image-upload-container {
+        .image-help-text {
+          margin-top: 5px;
+          font-size: 12px;
+          color: $color-text-tertiary;
+        }
+      }
+    }
+
+    .form-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
     }
   }
 }
