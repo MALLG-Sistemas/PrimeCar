@@ -158,18 +158,35 @@ import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
-// Estado reativo para controlar qual menu está aberto
+/**
+ * Estado reativo para controlar qual menu está aberto
+ * Um valor vazio significa que nenhum menu está aberto
+ * @type {import('vue').Ref<string>}
+ */
 const openMenu = ref("");
 
-// Hook para acessar a rota atual
+/**
+ * Hook para acessar informações da rota atual
+ * @type {import('vue-router').RouteLocationNormalizedLoaded}
+ */
 const route = useRoute();
 
-// Função para alternar abertura de menus
+/**
+ * Alterna a abertura/fechamento de um menu específico
+ * Se o menu clicado já estiver aberto, ele fecha
+ * Caso contrário, abre o menu clicado e fecha qualquer outro
+ *
+ * @param {string} menu - Identificador do menu a ser alternado
+ */
 const toggleMenu = (menu) => {
   openMenu.value = openMenu.value === menu ? "" : menu;
 };
 
-// Verificar a rota atual e abrir o menu apropriado
+/**
+ * Define o estado inicial do menu baseado na rota atual
+ * Usado para garantir que o menu correto esteja aberto quando
+ * o usuário acessa diretamente uma página específica
+ */
 const setInitialMenuState = () => {
   // Se estiver na raiz ou em páginas relacionadas a carros, abra o menu de carros
   if (
@@ -185,12 +202,17 @@ const setInitialMenuState = () => {
   }
 };
 
-// Executar ao montar o componente
+/**
+ * Executa a configuração inicial do menu quando o componente é montado
+ */
 onMounted(() => {
   setInitialMenuState();
 });
 
-// Observar mudanças na rota para atualizar o estado do menu
+/**
+ * Observa mudanças na rota para atualizar o estado do menu adequadamente
+ * Importante para manter o menu correto aberto durante navegações
+ */
 watch(
   () => route.path,
   () => setInitialMenuState()
