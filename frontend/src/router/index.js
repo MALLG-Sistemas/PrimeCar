@@ -32,8 +32,8 @@ const routes = [
       {
         path: "models",
         name: "Modelos",
-        component: () => import("../views/ModelsListView.vue"),
-        meta: { title: "Modelos" },
+        component: () => import("../views/AddModelView.vue"),
+        meta: { title: "Gerenciamento de Modelos" },
       },
       {
         path: "models/add",
