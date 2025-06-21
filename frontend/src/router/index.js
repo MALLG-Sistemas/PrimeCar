@@ -21,18 +21,19 @@ const routes = [
         meta: { title: "Add Veiculo" },
       },
       {
-        path: "edit",
-        name: "Editar Veiculo",
-        component: () => import("../views/EditVeiculo.vue"),
-        meta: { title: "Editar Veiculo" },
+        path: "edit/:id?",
+        name: "Visualizar e Editar Veiculo",
+        component: () => import("../views/EditViewVeiculo.vue"),
+        meta: { title: "Editar/Visualizar Veiculo" },
+        props: true, // Permite passar o parâmetro id como prop para o componente
       },
 
       // Rotas para Modelos:
       {
         path: "models",
         name: "Modelos",
-        component: () => import("../views/ModelsListView.vue"),
-        meta: { title: "Modelos" },
+        component: () => import("../views/AddModelView.vue"),
+        meta: { title: "Gerenciamento de Modelos" },
       },
       {
         path: "models/add",

@@ -159,7 +159,7 @@ const filteredCars = computed(() => {
  */
 const navigateToAddCar = () => router.push({ name: "Add Veiculo" });
 const navigateToDetails = (id) =>
-  router.push({ name: "CarDetail", params: { id } });
+  router.push({ name: "Visualizar e Editar Veiculo", params: { id } });
 
 // Função para formatar a data no estilo brasileiro
 const formatDate = (dateStr) => {
