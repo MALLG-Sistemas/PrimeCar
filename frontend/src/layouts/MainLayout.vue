@@ -1,9 +1,10 @@
 <template>
   <div class="dashboard-layout">
-    <!-- Sidebar -->
+    <!-- Sidebar: Menu lateral de naveção -->
     <aside class="sidebar">
-      <!-- Logo -->
+      <!-- Container com a Logo do sistema "PrimeCar" -->
       <div class="logo-container">
+        <!-- Logo PrimeCar -->
         <img
           src="/images/logo-primecar.jpg"
           alt="Logo PrimeCar"
@@ -12,21 +13,27 @@
 
       <!-- Navegação da Sidebar -->
       <nav class="sidebar-nav">
-        <!-- Link "Dashboard" (Home Page) -->
+        <!-- 
+          Link "Dashboard" (Home Page)
+          Usando router-link com slot customizado para maior controle sobre o elemento renderizado
+        -->
         <router-link
           to="/"
           custom
           v-slot="{ navigate, isActive }">
           <div
             class="nav-link"
-            :class="{ 'router-link-active': isActive }"
+            :class="{ 'router-link-active': isActive && route.path === '/' }"
             @click="navigate">
             <span class="nav-link-icon material-symbols-outlined">cottage</span>
             <span class="nav-text">Dashboard</span>
           </div>
         </router-link>
 
-        <!-- Link "Modelos" -->
+        <!-- 
+          Link "Modelos" - Menu expansível
+          Controla a abertura/fechamento do submenu correspondente  
+        -->
         <router-link
           to="/modelos"
           custom>
@@ -46,7 +53,9 @@
           </div>
         </router-link>
 
-        <!-- Submenu Modelos -->
+        <!-- 
+          Submenu Modelos - Aparece apenas quando o menu 'modelos' está aberto
+        -->
         <div
           class="sub-nav-link"
           v-show="openMenu === 'modelos'">
@@ -65,7 +74,10 @@
           </router-link>
         </div>
 
-        <!-- Menu Carros -->
+        <!-- 
+          Menu Carros - Outro menu expansível
+          Similar ao menu "Modelos" em estrutura
+        -->
         <router-link
           to="/"
           custom>
@@ -85,7 +97,10 @@
           </div>
         </router-link>
 
-        <!-- Submenu Carros -->
+        <!-- 
+          Submenu Carros - Opções específicas para gestão de veículos
+          Visível apenas quando o menu 'carros' está aberto
+        -->
         <div
           class="sub-nav-link"
           v-show="openMenu === 'carros'">
@@ -105,15 +120,18 @@
           </router-link>
 
           <router-link
-            to="/edit"
+            :to="currentEditingVehicleRoute"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': route.path === '/edit' }">
+            :class="{ 'router-link-active': isEditRoute }">
             <span class="nav-text">Visualizar/Editar Veículo</span>
           </router-link>
         </div>
       </nav>
 
-      <!-- Footer da Sidebar -->
+      <!-- 
+        Footer da Sidebar - Informações de copyright e logo secundário
+        Posicionado na parte inferior usando margin-top: auto
+      -->
       <div class="sidebar-footer">
         <p class="footer-text">PrimeCar - Copyright © 2025</p>
         <img
@@ -123,29 +141,135 @@
       </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
+    <!-- 
+      Conteúdo Principal - Área onde o conteúdo da página será renderizado
+      Formado pelo Header fixo e a view de rota dinâmica
+    -->
     <main class="main-content">
       <HeaderComponent />
+      <!-- Router-view renderiza o componente correspondente à rota atual -->
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, watch, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import HeaderComponent from "../components/HeaderComponent.vue";
 
-// Estado reativo para controlar qual menu está aberto
+/**
+ * Estado reativo para controlar qual menu está aberto
+ * Um valor vazio significa que nenhum menu está aberto
+ * @type {import('vue').Ref<string>}
+ */
 const openMenu = ref("");
 
-// Hook para acessar a rota atual
+/**
+ * Hook para acessar informações da rota atual
+ * @type {import('vue-router').RouteLocationNormalizedLoaded}
+ */
 const route = useRoute();
 
-// Função para alternar abertura de menus
+/**
+ * Verifica se a rota atual está relacionada à edição/visualização de veículo
+ * Isso inclui tanto /edit quanto /edit/[id]
+ */
+const isEditRoute = computed(() => {
+  return route.path === "/edit" || route.path.startsWith("/edit/");
+});
+
+/**
+ * Determina a rota para a opção "Visualizar/Editar Veículo" na sidebar.
+ * Se já estiver em uma página de edição com um ID, mantém esse ID.
+ * Caso contrário, usa o último ID acessado armazenado no localStorage.
+ * Se nenhum ID estiver disponível, direciona para a rota básica /edit sem parâmetros.
+ *
+ * @returns {Object|string} - Um objeto de rota com nome e parâmetros ou uma string de caminho
+ */
+const currentEditingVehicleRoute = computed(() => {
+  // Verifica se estamos em uma rota de edição com um ID
+  if (route.name === "Visualizar e Editar Veiculo" && route.params.id) {
+    return {
+      name: "Visualizar e Editar Veiculo",
+      params: { id: route.params.id },
+    };
+  }
+
+  // Verifica se existe um ID salvo no localStorage
+  const savedVehicleId = localStorage.getItem("lastViewedVehicleId");
+  if (savedVehicleId) {
+    return {
+      name: "Visualizar e Editar Veiculo",
+      params: { id: savedVehicleId },
+    };
+  }
+
+  // Caso não haja ID salvo ou atual, retorna a rota básica
+  return "/edit";
+});
+
+/**
+ * Alterna a abertura/fechamento de um menu específico
+ * Se o menu clicado já estiver aberto, ele fecha
+ * Caso contrário, abre o menu clicado e fecha qualquer outro
+ *
+ * @param {string} menu - Identificador do menu a ser alternado
+ */
 const toggleMenu = (menu) => {
   openMenu.value = openMenu.value === menu ? "" : menu;
 };
+
+/**
+ * Define o estado inicial do menu baseado na rota atual
+ * Usado para garantir que o menu correto esteja aberto quando
+ * o usuário acessa diretamente uma página específica
+ */
+const setInitialMenuState = () => {
+  // Se estiver na raiz ou em páginas relacionadas a carros, abra o menu de carros
+  if (
+    route.path === "/" ||
+    route.path.startsWith("/add") ||
+    route.path.startsWith("/edit")
+  ) {
+    openMenu.value = "carros";
+  }
+  // Se estiver em páginas de modelos, abra o menu de modelos
+  else if (route.path.startsWith("/models") || route.path === "/modelos") {
+    openMenu.value = "modelos";
+  }
+};
+
+/**
+ * Executa a configuração inicial do menu quando o componente é montado
+ */
+onMounted(() => {
+  setInitialMenuState();
+});
+
+/**
+ * Observa mudanças na rota para atualizar o estado do menu adequadamente
+ * Importante para manter o menu correto aberto durante navegações
+ */
+watch(
+  () => route.path,
+  () => setInitialMenuState()
+);
+
+/**
+ * Observa mudanças nos parâmetros da rota para atualizar o ID do veículo no localStorage
+ * quando o usuário visita uma página específica de edição de veículo
+ */
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId && route.name === "Visualizar e Editar Veiculo") {
+      // Salva o ID do veículo atual no localStorage para persistência
+      localStorage.setItem("lastViewedVehicleId", newId);
+    }
+  },
+  { immediate: true } // Executa imediatamente para capturar o valor inicial
+);
 </script>
 
 <style lang="scss" scoped>
@@ -155,17 +279,19 @@ const toggleMenu = (menu) => {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 /* Siderbar Styles */
 .sidebar {
   width: 248px;
+  min-width: 248px;
   background-color: $color-bg-sidebar;
   padding-top: 20px;
   color: $color-light-text;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-nav {
