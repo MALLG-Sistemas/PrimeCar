@@ -18,7 +18,7 @@ class ModeloSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         if instance.id:
             rep["id"] = (
-                f"CAR{instance.id:03d}"  # Formata o ID como CAR001, CAR002, etc.
+                f"M{instance.id:04d}"  # Formata o ID de Modelo como M0001, M0002, etc.
             )
         return rep
 
