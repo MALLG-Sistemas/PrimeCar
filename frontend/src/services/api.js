@@ -38,6 +38,23 @@ export default {
     return formClient.patch(`carros/${id}/`, formData);
   },
 
+  // Método para criar um novo carro
+  createCarro(formData) {
+    const formClient = axios.create({
+      baseURL: "http://127.0.0.1:8000/api/v1",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return formClient.post("carros/", formData);
+  },
+
+  // Método para buscar todos os modelos
+  getModelos() {
+    return apiClient.get("modelos/");
+  },
+
   // Método para excluir uma imagem específica de um carro
   deleteImagem(carroId, imagemId) {
     return apiClient.delete(`carros/${carroId}/delete_imagem/`, {
