@@ -753,15 +753,15 @@ const fetchCarDetails = async (id) => {
       ? `${car.value.modelo.nome_marca} ${car.value.modelo.nome_modelo}`
       : "";
 
-    // Obtém o ID do modelo, convertendo de "CAR001" para 1 se necessário
+    // Obtém o ID do modelo, convertendo de "M0001" para 1
     if (car.value.modelo?.id) {
       if (
         typeof car.value.modelo.id === "string" &&
-        car.value.modelo.id.startsWith("CAR")
+        car.value.modelo.id.startsWith("M")
       ) {
-        // Se o ID estiver no formato "CARxxx", extrai apenas o número
+        // Se o ID estiver no formato "Mxxxx", extrai apenas o número
         editedCar.modelo_id = parseInt(
-          car.value.modelo.id.replace("CAR", ""),
+          car.value.modelo.id.replace("M", ""),
           10
         );
       } else {

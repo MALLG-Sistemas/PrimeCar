@@ -1,8 +1,5 @@
 <template>
-  <button
-    :class="buttonClass"
-    :style="buttonStyle"
-    @click="handleClick">
+  <button :class="buttonClass" :style="buttonStyle" @click="handleClick">
     <slot>Click Me</slot>
   </button>
 </template>
@@ -47,6 +44,7 @@ const sizeStyles = {
   small: { width: "90px" },
   medium: { width: "113px" },
   large: { width: "124px" },
+  xlarge: { width: "150px" },
 };
 
 // Computed para definir os estilos inline do botão
