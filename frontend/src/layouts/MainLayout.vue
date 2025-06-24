@@ -62,14 +62,14 @@
           <router-link
             to="/models"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': route.path === '/modelos' }">
+            :class="{ 'router-link-active': route.path === '/models' }">
             <span class="nav-text">Dashboard Modelos</span>
           </router-link>
 
           <router-link
             to="/models/add"
             class="nav-link sub-link"
-            :class="{ 'router-link-active': route.path === '/modelos/add' }">
+            :class="{ 'router-link-active': route.path === '/models/add' }">
             <span class="nav-text">Cadastro de Modelos</span>
           </router-link>
         </div>
