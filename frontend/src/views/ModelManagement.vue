@@ -1,35 +1,253 @@
 <template>
-  <section class="section-models-view">
-    <div class="container">
-      <h1 class="title">Modelos</h1>
-      <p class="subtitle">Lista de modelos disponíveis</p>
-      <p>Em breve, esta seção exibirá os modelos disponíveis.</p>
+  <section class="model-management">
+    <!-- Dialog de confirmação para exclusão -->
+    <DialogAlert
+      :isVisible="showDeleteDialog"
+      :message="`Tem certeza que deseja excluir o modelo: ${
+        modelToDelete ? modelToDelete.nome_modelo : ''
+      }?`"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+      @close="cancelDelete" />
+
+    <header class="model-management__header">
+      <h1 class="model-management__title">Gerenciamento de Modelos</h1>
+      <ButtonComponent
+        size="large"
+        bgColor="#3D5E73"
+        textColor="#FFFFFF"
+        fontSize="12px"
+        @click="addModel">
+        Cadastrar Modelo
+      </ButtonComponent>
+    </header>
+
+    <div
+      v-if="isLoading"
+      class="model-management__status-message">
+      Carregando modelos...
     </div>
+    <div
+      v-else-if="errorMessage"
+      class="model-management__status-message model-management__status-message--error">
+      {{ errorMessage }}
+    </div>
+
+    <table
+      v-else
+      class="model-management__table">
+      <thead>
+        <tr>
+          <th>ID Modelo</th>
+          <th>Marca</th>
+          <th>Ano</th>
+          <th>Modelo</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="modelo in modelos"
+          :key="modelo.id">
+          <td>{{ modelo.id }}</td>
+          <td>{{ modelo.nome_marca }}</td>
+          <td>{{ modelo.ano_modelo }}</td>
+          <td>{{ modelo.nome_modelo }}</td>
+          <td class="model-management__actions">
+            <ButtonComponent
+              size="small"
+              bgColor="#fbbf24"
+              textColor="#FFFFFF"
+              @click="editModel(modelo)">
+              <span class="material-symbols-outlined">edit</span>
+            </ButtonComponent>
+            <ButtonComponent
+              size="small"
+              bgColor="#ef4444"
+              textColor="#FFFFFF"
+              @click="prepareDelete(modelo)">
+              <span class="material-symbols-outlined">delete</span>
+            </ButtonComponent>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import apiClient from "../services/api";
+import ButtonComponent from "../components/ButtonComponent.vue";
+import DialogAlert from "../components/DialogAlert.vue";
+
+const router = useRouter();
+
+// Estado para os dados e UI
+const modelos = ref([]);
+const isLoading = ref(true);
+const errorMessage = ref("");
+
+// Estado para o dialog de exclusão
+const showDeleteDialog = ref(false);
+const modelToDelete = ref(null);
+
+// Busca os modelos da API
+const fetchModelos = async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const response = await apiClient.getModelos();
+    modelos.value = response.data.results || response.data;
+  } catch (error) {
+    console.error("Erro ao buscar modelos:", error);
+    errorMessage.value =
+      "Falha ao carregar os modelos. Tente novamente mais tarde.";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Funções de ação
+const addModel = () => {
+  router.push({ name: "Add Modelo" });
+};
+
+const editModel = (modelo) => {
+  alert(
+    `Função de editar o modelo ${modelo.nome_modelo} (${modelo.id}) ainda não implementada.`
+  );
+};
+
+const prepareDelete = (modelo) => {
+  modelToDelete.value = modelo;
+  showDeleteDialog.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!modelToDelete.value) return;
+
+  try {
+    const numericId = parseInt(
+      String(modelToDelete.value.id).replace(/\D/g, ""),
+      10
+    );
+    if (isNaN(numericId)) {
+      throw new Error("ID do modelo inválido para exclusão.");
+    }
+
+    await apiClient.deleteModelo(numericId);
+    alert(`Modelo ${modelToDelete.value.nome_modelo} excluído com sucesso!`);
+    await fetchModelos();
+  } catch (error) {
+    console.error("Erro ao excluir modelo:", error);
+    alert(`Falha ao excluir o modelo: ${error.message}`);
+  } finally {
+    cancelDelete();
+  }
+};
+
+const cancelDelete = () => {
+  showDeleteDialog.value = false;
+  modelToDelete.value = null;
+};
+
+onMounted(() => {
+  fetchModelos();
+});
+</script>
 
 <style lang="scss" scoped>
 @use "../styles/variables" as *;
+@use "sass:color";
 
-.section-models-view {
-  .container {
+.model-management {
+  padding: 44px 22px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  &__title {
+    font-family: $font-primary;
+    font-size: 29px;
+    font-weight: 500;
+    color: $color-text-secondary;
+  }
+
+  &__status-message {
     padding: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: $color-text-tertiary;
+
+    &--error {
+      color: $color-button-danger;
+      font-weight: 500;
+    }
   }
 
-  .title {
-    font-size: 2rem;
-    color: #333;
-    text-align: center;
+  &__table {
+    width: 100%;
     margin-top: 20px;
+    border: 1px solid $color-border-table;
+    border-radius: 8px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba($color-dark-bg, 0.05);
+
+    thead {
+      th {
+        padding: 16px;
+        text-align: left;
+        font-family: $font-primary;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px dashed $color-border-table;
+      }
+    }
+
+    tbody {
+      font-size: 14px;
+      font-weight: 500;
+      color: $color-text-secondary;
+      border-bottom: 1px dashed $color-border-table;
+
+      tr {
+        &:last-child td {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        padding: 12px 16px;
+        font-family: $font-primary;
+        font-size: 14px;
+        font-weight: 500;
+        color: $color-text-secondary;
+        border-bottom: 1px solid
+          color.adjust($color-border-table, $lightness: 35%);
+      }
+    }
   }
 
-  .subtitle {
-    font-size: 1.5rem;
-    color: #666;
-    text-align: center;
-    margin-top: 10px;
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .material-symbols-outlined {
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+    }
   }
 }
 </style>
