@@ -20,12 +20,12 @@ export default {
 
   // Método para buscar um carro específico pelo ID do endpoint /veiculos/carros/{id}/
   getCarro(id) {
-    return apiClient.get(carros/${id}/);
+    return apiClient.get(`carros/${id}/`);
   },
 
   // Método para excluir um carro pelo ID
   deleteCarro(id) {
-    return apiClient.delete(carros/${id}/);
+    return apiClient.delete(`carros/${id}/`);
   },
 
   // Método para atualizar um carro pelo ID
@@ -38,7 +38,7 @@ export default {
         "Content-Type": "multipart/form-data",
       },
     });
-    return formClient.patch(carros/${id}/, formData);
+    return formClient.patch(`carros/${id}/`, formData);
   },
 
   // Método para criar um novo carro
@@ -64,30 +64,30 @@ export default {
   },
 
   updateModelo(id, data) {
-    return apiClient.patch(modelos/${id}/, data);
+    return apiClient.patch(`modelos/${id}/`, data);
   },
 
   deleteModelo(id) {
-    return apiClient.delete(modelos/${id}/);
+    return apiClient.delete(`modelos/${id}/`);
   },
 
   // Método para excluir uma imagem específica de um carro
   deleteImagem(carroId, imagemId) {
-    return apiClient.delete(carros/${carroId}/delete_imagem/, {
+    return apiClient.delete(`carros/${carroId}/delete_imagem/`, {
       data: { imagem_id: imagemId },
     });
   },
 
   // Método para reordenar as imagens de um carro
   reordenarImagens(carroId, imagens) {
-    return apiClient.post(carros/${carroId}/reordenar_imagens/, {
+    return apiClient.post(`carros/${carroId}/reordenar_imagens/`, {
       imagens: imagens,
     });
   },
 
   // Método para definir uma imagem como principal
   setImagemPrincipal(carroId, imagemId) {
-    return apiClient.post(carros/${carroId}/set_imagem_principal/, {
+    return apiClient.post(`carros/${carroId}/set_imagem_principal/`, {
       imagem_id: imagemId,
     });
   },

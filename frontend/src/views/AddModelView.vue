@@ -103,7 +103,7 @@
               :value="success?.ano_modelo || ''"
               readonly />
           </div>
-          <div class="field">
+          <div class="field__description">
             <label>Descrição</label>
             <textarea
               :rows="3"
@@ -116,14 +116,18 @@
         <ButtonComponent
           class="submit-button"
           @click="showSuccess = false"
-          size="large"
-          bgColor="$color-button-primary"
-          textColor="$color-light-text">
+          size="xxlarge"
+          fontSize="16px"
+          fontWeight="500"
+          height="49px"
+          textColor="#fff">
           Cadastrar Outro Modelo
         </ButtonComponent>
       </div>
 
       <!-- Edição de Modelo -->
+
+      <!-- CODIFICAR INPUT PARA BUSCAR O MODELO -->
       <div class="edit-modelo">
         <h2 class="section-title">Edição de Modelo</h2>
         <form @submit.prevent="handleEdit">
@@ -252,7 +256,7 @@ async function handleSubmit() {
 
     if (modelExists) {
       alert(
-        O modelo ${form.nome_marca} ${form.nome_modelo} (${form.ano_modelo}) já está cadastrado.
+        `O modelo ${form.nome_marca} ${form.nome_modelo} (${form.ano_modelo}) já está cadastrado.`
       );
       isSubmitting.value = false;
       return;
@@ -292,15 +296,15 @@ async function handleSubmit() {
       // Erro específico de unicidade do conjunto de campos
       const message = error.response.data.non_field_errors.join("\n");
       alert(
-        Erro: ${message}\n\nJá existe um modelo com essa combinação de marca, nome e ano.
+        `Erro: ${message}\n\nJá existe um modelo com essa combinação de marca, nome e ano.`
       );
     } else if (error.response && error.response.data) {
       // Outros erros de validação
       const errorDetails = Object.entries(error.response.data)
-        .map(([field, errors]) => ${field}: ${errors.join(", ")})
+        .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
         .join("\n");
 
-      errorMessage.value = Erro ao cadastrar modelo:\n${errorDetails};
+      errorMessage.value = `Erro ao cadastrar modelo:\n${errorDetails};`;
       alert(errorMessage.value);
     } else {
       // Erro genérico
