@@ -32,7 +32,7 @@ const routes = [
       {
         path: "models",
         name: "Modelos",
-        component: () => import("../views/AddModelView.vue"),
+        component: () => import("../views/ModelManagement.vue"),
         meta: { title: "Gerenciamento de Modelos" },
       },
       {
@@ -44,7 +44,7 @@ const routes = [
 
       // Rota 404 - Page Not Found:
       {
-        path: "/:catchAll(.*)*",
+        path: "/:catchAll(.)",
         name: "NotFound",
         component: () => import("../views/NotFound.vue"),
         meta: { title: "Page Not Found" },

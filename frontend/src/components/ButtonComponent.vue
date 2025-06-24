@@ -1,5 +1,8 @@
 <template>
-  <button :class="buttonClass" :style="buttonStyle" @click="handleClick">
+  <button
+    :class="buttonClass"
+    :style="buttonStyle"
+    @click="handleClick">
     <slot>Click Me</slot>
   </button>
 </template>
@@ -29,6 +32,16 @@ const props = defineProps({
     type: String,
     default: "16px",
   },
+  // Espessura da fonte
+  fontWeight: {
+    type: String,
+    default: "600",
+  },
+  // Altura do botão
+  height: {
+    type: String,
+    default: "37px",
+  },
 });
 
 // Emissão de eventos para o componente pai
@@ -45,6 +58,7 @@ const sizeStyles = {
   medium: { width: "113px" },
   large: { width: "124px" },
   xlarge: { width: "150px" },
+  xxlarge: { width: "230px" },
 };
 
 // Computed para definir os estilos inline do botão
@@ -52,11 +66,11 @@ const buttonStyle = computed(() => ({
   backgroundColor: props.bgColor,
   color: props.textColor,
   fontSize: props.fontSize,
-  fontWeight: "600",
+  fontWeight: props.fontWeight || "600",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  height: "37px",
+  height: props.height || "37px",
   border: "none",
   borderRadius: "6px",
   cursor: "pointer",
