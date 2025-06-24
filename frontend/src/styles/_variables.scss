@@ -20,3 +20,11 @@ $color-button-primary: #3d5e73;
 $color-button-danger: #f00;
 
 $color-border-table: #878787;
+
+// Cores do AlertComponent
+$alert-colors: (
+  success: #4caf50,
+  error: #f44336,
+  warning: #ff9800,
+  info: #2196f3,
+) !default;

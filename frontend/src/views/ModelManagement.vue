@@ -10,6 +10,13 @@
       @cancel="cancelDelete"
       @close="cancelDelete" />
 
+    <!--Alert Componente-->
+    <AlertComponent
+      :isVisible="showAlert"
+      :message="alertMessage"
+      :type="alertType"
+      @close="showAlert = false" />
+
     <header class="model-management__header">
       <h1 class="model-management__title">Gerenciamento de Modelos</h1>
       <ButtonComponent
@@ -85,6 +92,7 @@ import { useRouter } from "vue-router";
 import apiClient from "../services/api";
 import ButtonComponent from "../components/ButtonComponent.vue";
 import DialogAlert from "../components/DialogAlert.vue";
+import AlertComponent from "../components/AlertComponent.vue";
 
 const router = useRouter();
 
@@ -92,6 +100,11 @@ const router = useRouter();
 const modelos = ref([]);
 const isLoading = ref(true);
 const errorMessage = ref("");
+
+// Estado para o alerta
+const showAlert = ref(false);
+const alertMessage = ref("");
+const alertType = ref("");
 
 // Estado para o dialog de exclusão
 const showDeleteDialog = ref(false);
@@ -131,6 +144,7 @@ const prepareDelete = (modelo) => {
 
 const confirmDelete = async () => {
   if (!modelToDelete.value) return;
+  const modelName = modelToDelete.value.nome_modelo;
 
   try {
     const numericId = parseInt(
@@ -142,11 +156,22 @@ const confirmDelete = async () => {
     }
 
     await apiClient.deleteModelo(numericId);
-    alert(`Modelo ${modelToDelete.value.nome_modelo} excluído com sucesso!`);
+    // mostra alert de sucesso
+    alertType.value = "success";
+    alertMessage.value = `Modelo ${modelName} excluído com sucesso!`;
+    showAlert.value = true;
     await fetchModelos();
   } catch (error) {
     console.error("Erro ao excluir modelo:", error);
-    alert(`Falha ao excluir o modelo: ${error.message}`);
+    alertType.value = "error";
+    if (error.response?.status === 500) {
+      alertMessage.value = `Não é possível excluir o modelo ${modelName} porque ele está sendo usado por um ou mais veículos.`;
+    } else {
+      alertMessage.value = `Falha ao excluir o modelo: ${
+        error.response?.data?.detail || error.message
+      }`;
+    }
+    showAlert.value = true;
   } finally {
     cancelDelete();
   }
