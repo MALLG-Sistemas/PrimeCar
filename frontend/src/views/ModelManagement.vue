@@ -44,7 +44,7 @@
           <th>Marca</th>
           <th>Ano</th>
           <th>Modelo</th>
-          <th>Ações</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -57,16 +57,18 @@
           <td>{{ modelo.nome_modelo }}</td>
           <td class="model-management__actions">
             <ButtonComponent
-              size="small"
+              size="little"
               bgColor="#878787"
               textColor="#FFFFFF"
+              height="40px"
               @click="editModel(modelo)">
               <span class="material-symbols-outlined">edit</span>
             </ButtonComponent>
             <ButtonComponent
-              size="small"
+              size="little"
               bgColor="#FF0000"
               textColor="#FFFFFF"
+              height="40px"
               @click="prepareDelete(modelo)">
               <span class="material-symbols-outlined">delete</span>
             </ButtonComponent>
@@ -246,13 +248,14 @@ onMounted(() => {
 
   &__actions {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 8px;
 
     .material-symbols-outlined {
       display: flex;
       align-items: center;
-      font-size: 20px;
+      font-size: 18px;
     }
   }
 }

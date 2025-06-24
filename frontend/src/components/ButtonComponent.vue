@@ -54,6 +54,7 @@ const buttonClass = computed(() => ({
 
 // Define os tamanhos do botão
 const sizeStyles = {
+  little: { width: "40px" },
   small: { width: "90px" },
   medium: { width: "113px" },
   large: { width: "124px" },
