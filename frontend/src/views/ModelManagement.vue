@@ -13,10 +13,12 @@
     <header class="model-management__header">
       <h1 class="model-management__title">Gerenciamento de Modelos</h1>
       <ButtonComponent
+        class="model-management__add-button"
         size="large"
         bgColor="#3D5E73"
         textColor="#FFFFFF"
         fontSize="12px"
+        fontWeight="600"
         @click="addModel">
         Cadastrar Modelo
       </ButtonComponent>
@@ -56,14 +58,14 @@
           <td class="model-management__actions">
             <ButtonComponent
               size="small"
-              bgColor="#fbbf24"
+              bgColor="#878787"
               textColor="#FFFFFF"
               @click="editModel(modelo)">
               <span class="material-symbols-outlined">edit</span>
             </ButtonComponent>
             <ButtonComponent
               size="small"
-              bgColor="#ef4444"
+              bgColor="#FF0000"
               textColor="#FFFFFF"
               @click="prepareDelete(modelo)">
               <span class="material-symbols-outlined">delete</span>
@@ -163,13 +165,17 @@ onMounted(() => {
 @use "sass:color";
 
 .model-management {
-  padding: 44px 22px;
+  padding: 44px 40px;
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+
+    &__add-button {
+      font-family: $font-primary;
+    }
   }
 
   &__title {
