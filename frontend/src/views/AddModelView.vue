@@ -146,7 +146,7 @@
               <input
                 type="text"
                 id="edit-marca"
-                v-model="editForm.marca"
+                v-model="editForm.nome_marca"
                 placeholder="Alterar Marca" />
             </div>
             <div class="field">
@@ -154,7 +154,7 @@
               <input
                 type="number"
                 id="edit-ano"
-                v-model="editForm.ano"
+                v-model="editForm.ano_modelo"
                 placeholder="Alterar Ano" />
             </div>
             <div class="field__description">
@@ -163,7 +163,7 @@
                 rows="4"
                 type="text"
                 id="edit-descricao"
-                v-model="editForm.descricao"
+                v-model="editForm.descricao_modelo"
                 placeholder="Alterar Descrição" />
             </div>
           </div>
@@ -185,9 +185,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue"; // Importar onMounted
+import { useRoute } from "vue-router"; // Importar useRoute
 import ButtonComponent from "../components/ButtonComponent.vue";
 import apiClient from "../services/api";
+
+// Hooks do Vue Router
+const route = useRoute(); // Obter o objeto de rota
 
 // Estado reativo para os formulários
 const form = reactive({
@@ -318,6 +322,41 @@ async function handleSubmit() {
 }
 
 /**
+ * Função para buscar os detalhes do modelo pelo ID
+ * @param {string} id - ID do modelo (pode ser "Mxxxx" ou numérico)
+ */
+async function fetchModelDetails(id) {
+  try {
+    // Remove o "M" do início se houver e converte para número
+    const cleanId = String(id).replace(/^M/, "");
+    const numericId = parseInt(cleanId, 10);
+
+    if (isNaN(numericId)) {
+      console.error("ID do modelo inválido:", id);
+      alert("ID do modelo inválido.");
+      return;
+    }
+
+    // Assume que apiClient tem um método getModelo para buscar um único modelo
+    // Baseado nos endpoints do backend README e no padrão de EditViewVeiculo
+    const response = await apiClient.getModelo(numericId);
+
+    // Preenche o formulário de edição com os dados recebidos
+    editForm.codigo = response.data.id; // Mantém o formato "Mxxxx" ou numérico
+    editForm.nome_marca = response.data.nome_marca;
+    editForm.nome_modelo = response.data.nome_modelo;
+    editForm.ano_modelo = response.data.ano_modelo;
+    editForm.descricao_modelo = response.data.descricao_modelo;
+  } catch (error) {
+    console.error("Erro ao buscar detalhes do modelo:", error);
+    alert(
+      error.response?.data?.detail ||
+        "Erro ao carregar detalhes do modelo. Verifique o código e tente novamente."
+    );
+  }
+}
+
+/**
  * Manipula o envio do formulário de edição
  * No futuro, poderá fazer chamadas à API para persistir as alterações
  */
@@ -372,6 +411,16 @@ async function handleEdit() {
     isSubmitting.value = false;
   }
 }
+
+// Hook de ciclo de vida - executado quando o componente é montado
+onMounted(() => {
+  // Verifica se há um ID de modelo nos parâmetros da rota
+  const modelId = route.params.id;
+  if (modelId) {
+    // Se houver, busca os detalhes do modelo para preencher o formulário de edição
+    fetchModelDetails(modelId);
+  }
+});
 </script>
 
 <style lang="scss" scoped>

@@ -58,6 +58,13 @@ export default {
     return apiClient.get("modelos/");
   },
 
+  /**
+   * Busca os detalhes de um modelo específico pelo seu ID.
+   * @param {number} id - O ID numérico do modelo.
+   * @returns {Promise<Object>} Uma promessa que resolve com os dados do modelo.
+   */
+  getModelo: (id) => apiClient.get(`/modelos/${id}/`),
+
   // Métodos para criar, atualizar e excluir modelos de carros
   createModelo(data) {
     return apiClient.post("modelos/", data);

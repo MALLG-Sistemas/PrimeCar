@@ -132,9 +132,10 @@ const addModel = () => {
 };
 
 const editModel = (modelo) => {
-  alert(
-    `Função de editar o modelo ${modelo.nome_modelo} (${modelo.id}) ainda não implementada.`
-  );
+  router.push({
+    name: "Add Modelo",
+    params: { id: modelo.id },
+  });
 };
 
 const prepareDelete = (modelo) => {
