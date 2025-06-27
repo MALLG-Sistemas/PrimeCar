@@ -126,20 +126,30 @@
       </div>
 
       <!-- Edição de Modelo -->
-
-      <!-- CODIFICAR INPUT PARA BUSCAR O MODELO -->
       <div class="edit-modelo">
         <h2 class="section-title">Edição de Modelo</h2>
         <form @submit.prevent="handleEdit">
           <div class="form-group">
-            <div class="field">
+            <div class="field search-field">
               <label for="edit-codigo">ID Modelo</label>
-              <input
-                type="text"
-                id="edit-codigo"
-                v-model="editForm.codigo"
-                placeholder="Informe o código para buscar"
-                required />
+              <div class="input-with-button">
+                <input
+                  type="text"
+                  id="edit-codigo"
+                  v-model="editForm.codigo"
+                  placeholder="Informe o código para buscar"
+                  required />
+                <ButtonComponent
+                  class="search-button"
+                  @click.prevent="handleSearchModel"
+                  size="small"
+                  textColor="#fff"
+                  fontSize="14px"
+                  fontWeight="500"
+                  height="38px">
+                  Buscar
+                </ButtonComponent>
+              </div>
             </div>
             <div class="field">
               <label for="edit-marca">Marca</label>
@@ -148,6 +158,14 @@
                 id="edit-marca"
                 v-model="editForm.nome_marca"
                 placeholder="Alterar Marca" />
+            </div>
+            <div class="field">
+              <label for="edit-modelo">Nome do Modelo</label>
+              <input
+                type="text"
+                id="edit-modelo"
+                v-model="editForm.nome_modelo"
+                placeholder="Alterar Modelo" />
             </div>
             <div class="field">
               <label for="edit-ano">Ano do Modelo</label>
@@ -180,18 +198,27 @@
           </ButtonComponent>
         </form>
       </div>
+
+      <!-- ALERTA DE ERRO -->
+      <AlertComponent
+        v-if="alert.visible"
+        :isVisible="alert.visible"
+        :message="alert.message"
+        :type="alert.type"
+        @close="alert.visible = false" />
     </section>
   </section>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue"; // Importar onMounted
-import { useRoute } from "vue-router"; // Importar useRoute
+import { ref, reactive, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import ButtonComponent from "../components/ButtonComponent.vue";
+import AlertComponent from "../components/AlertComponent.vue";
 import apiClient from "../services/api";
 
 // Hooks do Vue Router
-const route = useRoute(); // Obter o objeto de rota
+const route = useRoute();
 
 // Estado reativo para os formulários
 const form = reactive({
@@ -207,6 +234,13 @@ const editForm = reactive({
   nome_modelo: "",
   ano_modelo: "",
   descricao_modelo: "",
+});
+
+// Estado para alertas
+const alert = reactive({
+  visible: false,
+  message: "",
+  type: "error",
 });
 
 // Estados para controlar a UI
@@ -247,7 +281,9 @@ async function handleSubmit() {
     // Validação básica
     if (!form.nome_marca || !form.nome_modelo || !form.ano_modelo) {
       errorMessage.value = "Por favor, preencha os campos obrigatórios.";
-      alert(errorMessage.value);
+      alert.message = errorMessage.value;
+      alert.type = "error";
+      alert.visible = true;
       return;
     }
 
@@ -259,9 +295,9 @@ async function handleSubmit() {
     );
 
     if (modelExists) {
-      alert(
-        `O modelo ${form.nome_marca} ${form.nome_modelo} (${form.ano_modelo}) já está cadastrado.`
-      );
+      alert.message = `O modelo ${form.nome_marca} ${form.nome_modelo} (${form.ano_modelo}) já está cadastrado.`;
+      alert.type = "error";
+      alert.visible = true;
       isSubmitting.value = false;
       return;
     }
@@ -273,8 +309,6 @@ async function handleSubmit() {
       ano_modelo: parseInt(form.ano_modelo, 10),
       descricao_modelo: form.descricao_modelo || "",
     };
-
-    // console.log("Enviando dados:", modeloData);
 
     // Envia para a API
     const response = await apiClient.createModelo(modeloData);
@@ -297,24 +331,25 @@ async function handleSubmit() {
 
     // Mensagem específica para o erro de unicidade
     if (error.response?.data?.non_field_errors) {
-      // Erro específico de unicidade do conjunto de campos
       const message = error.response.data.non_field_errors.join("\n");
-      alert(
-        `Erro: ${message}\n\nJá existe um modelo com essa combinação de marca, nome e ano.`
-      );
+      alert.message = `Erro: ${message}\n\nJá existe um modelo com essa combinação de marca, nome e ano.`;
+      alert.type = "error";
+      alert.visible = true;
     } else if (error.response && error.response.data) {
-      // Outros erros de validação
       const errorDetails = Object.entries(error.response.data)
         .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
         .join("\n");
 
       errorMessage.value = `Erro ao cadastrar modelo:\n${errorDetails};`;
-      alert(errorMessage.value);
+      alert.message = errorMessage.value;
+      alert.type = "error";
+      alert.visible = true;
     } else {
-      // Erro genérico
       errorMessage.value =
         "Ocorreu um erro ao cadastrar o modelo. Por favor, tente novamente.";
-      alert(errorMessage.value);
+      alert.message = errorMessage.value;
+      alert.type = "error";
+      alert.visible = true;
     }
   } finally {
     isSubmitting.value = false;
@@ -327,38 +362,58 @@ async function handleSubmit() {
  */
 async function fetchModelDetails(id) {
   try {
-    // Remove o "M" do início se houver e converte para número
     const cleanId = String(id).replace(/^M/, "");
     const numericId = parseInt(cleanId, 10);
 
     if (isNaN(numericId)) {
-      console.error("ID do modelo inválido:", id);
-      alert("ID do modelo inválido.");
+      alert.message = "ID do modelo inválido.";
+      alert.type = "error";
+      alert.visible = true;
+      Object.assign(editForm, {
+        nome_marca: "",
+        nome_modelo: "",
+        ano_modelo: "",
+        descricao_modelo: "",
+      });
       return;
     }
 
-    // Assume que apiClient tem um método getModelo para buscar um único modelo
-    // Baseado nos endpoints do backend README e no padrão de EditViewVeiculo
     const response = await apiClient.getModelo(numericId);
 
-    // Preenche o formulário de edição com os dados recebidos
-    editForm.codigo = response.data.id; // Mantém o formato "Mxxxx" ou numérico
+    editForm.codigo = response.data.id;
     editForm.nome_marca = response.data.nome_marca;
     editForm.nome_modelo = response.data.nome_modelo;
     editForm.ano_modelo = response.data.ano_modelo;
     editForm.descricao_modelo = response.data.descricao_modelo;
   } catch (error) {
-    console.error("Erro ao buscar detalhes do modelo:", error);
-    alert(
-      error.response?.data?.detail ||
-        "Erro ao carregar detalhes do modelo. Verifique o código e tente novamente."
-    );
+    // Se não encontrar, mostra alerta amigável
+    alert.message = "O modelo buscado nao está cadastrado";
+    alert.type = "error";
+    alert.visible = true;
+    Object.assign(editForm, {
+      nome_marca: "",
+      nome_modelo: "",
+      ano_modelo: "",
+      descricao_modelo: "",
+    });
   }
 }
 
 /**
+ * Manipula a busca do modelo pelo ID
+ */
+async function handleSearchModel() {
+  if (!editForm.codigo) {
+    alert.message = "Por favor, informe o código do modelo para buscar.";
+    alert.type = "error";
+    alert.visible = true;
+    return;
+  }
+  await fetchModelDetails(editForm.codigo);
+}
+
+/**
  * Manipula o envio do formulário de edição
- * No futuro, poderá fazer chamadas à API para persistir as alterações
  */
 async function handleEdit() {
   if (isSubmitting.value) return;
@@ -367,16 +422,16 @@ async function handleEdit() {
     isSubmitting.value = true;
     errorMessage.value = "";
 
-    // Validação básica
     if (!editForm.codigo) {
       errorMessage.value = "Por favor, informe o código do modelo.";
+      alert.message = errorMessage.value;
+      alert.type = "error";
+      alert.visible = true;
       return;
     }
 
-    // Busca o modelo pelo ID primeiro
-    const modeloId = editForm.codigo.replace(/^M/, ""); // Remove o "M" do início se houver
+    const modeloId = editForm.codigo.replace(/^M/, "");
 
-    // Prepara dados para atualização (apenas campos preenchidos)
     const updateData = {};
     if (editForm.nome_marca) updateData.nome_marca = editForm.nome_marca;
     if (editForm.nome_modelo) updateData.nome_modelo = editForm.nome_modelo;
@@ -385,12 +440,12 @@ async function handleEdit() {
     if (editForm.descricao_modelo)
       updateData.descricao_modelo = editForm.descricao_modelo;
 
-    // Atualiza o modelo
     if (Object.keys(updateData).length > 0) {
       await apiClient.updateModelo(modeloId, updateData);
-      alert("Modelo atualizado com sucesso!");
+      alert.message = "Modelo atualizado com sucesso!";
+      alert.type = "success";
+      alert.visible = true;
 
-      // Limpa o formulário
       Object.assign(editForm, {
         codigo: "",
         nome_marca: "",
@@ -399,25 +454,25 @@ async function handleEdit() {
         descricao_modelo: "",
       });
     } else {
-      alert("Nenhuma alteração para salvar.");
+      alert.message = "Nenhuma alteração para salvar.";
+      alert.type = "info";
+      alert.visible = true;
     }
   } catch (error) {
     console.error("Erro ao atualizar modelo:", error);
-    alert(
+    alert.message =
       error.response?.data?.detail ||
-        "Erro ao atualizar o modelo. Verifique o código e tente novamente."
-    );
+      "Erro ao atualizar o modelo. Verifique o código e tente novamente.";
+    alert.type = "error";
+    alert.visible = true;
   } finally {
     isSubmitting.value = false;
   }
 }
 
-// Hook de ciclo de vida - executado quando o componente é montado
 onMounted(() => {
-  // Verifica se há um ID de modelo nos parâmetros da rota
   const modelId = route.params.id;
   if (modelId) {
-    // Se houver, busca os detalhes do modelo para preencher o formulário de edição
     fetchModelDetails(modelId);
   }
 });
@@ -445,7 +500,6 @@ onMounted(() => {
     padding: 27px 0;
   }
 
-  // Estilos compartilhados entre os cards de cadastro e edição
   .cadastro-modelo,
   .edit-modelo {
     background-color: $color-primary;
@@ -454,7 +508,6 @@ onMounted(() => {
     padding: 20px;
   }
 
-  // Título das seções
   .section-title {
     color: $color-light-text;
     font-family: $font-primary;
@@ -471,7 +524,6 @@ onMounted(() => {
     margin-top: 30px;
   }
 
-  // Layout dos grupos de campos
   .form-group {
     display: flex;
     flex-wrap: wrap;
@@ -485,7 +537,6 @@ onMounted(() => {
     font-family: $font-primary;
   }
 
-  // Campos individuais
   .field {
     flex: 1;
     min-width: 220px;
@@ -506,7 +557,21 @@ onMounted(() => {
     }
   }
 
-  // Estilo dos labels
+  // Estilos específicos para o campo de busca na edição
+  .search-field {
+    flex-basis: 100%;
+  }
+
+  .input-with-button {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+
+    input {
+      flex-grow: 1;
+    }
+  }
+
   label {
     padding-bottom: 10px;
     font-size: 16px;
@@ -517,7 +582,6 @@ onMounted(() => {
     max-width: 150px;
   }
 
-  // Estilo dos inputs
   input {
     padding: 10px;
     border: 1px solid $color-border-table;
@@ -526,7 +590,6 @@ onMounted(() => {
     font-family: $font-secondary;
   }
 
-  // Card de sucesso
   .success-card {
     border: 2px solid $color-border-table;
     background-color: $color-primary;
@@ -550,7 +613,6 @@ onMounted(() => {
   }
 }
 
-// Responsividade para telas menores
 @media (max-width: 768px) {
   .add-model__section {
     .field {
